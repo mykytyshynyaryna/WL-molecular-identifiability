@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "wl-identifiability"
+version = "0.1.0"
+description = "1-WL identifiability analysis pipeline for molecular graphs (ZINC dataset)"
+requires-python = ">=3.10"
+
+dependencies = [
+    "networkx>=3.3",
+    "numpy>=1.26",
+    "matplotlib>=3.9",
+    "polars>=1.0",
+    "rdkit>=2024.3",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/wl_identifiability", "scripts", "examples"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+]
+
+[project.scripts]
+run-pipeline = "examples.run_pipeline:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+ignore_missing_imports = true

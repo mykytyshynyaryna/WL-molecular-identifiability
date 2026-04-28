@@ -1,0 +1,3 @@
+molecule_id,dataset_name,smiles,n_nodes,n_edges,top_bouquet_forest_verdict,atom_bouquet_forest_verdict,top_bouquet_forest_reason,atom_bouquet_forest_reason,top_has_bouquet_component,atom_has_bouquet_component,verdict_pattern
+45,mutag_smiles.smi,O=[N+]([O-])c1ccc([N+](=O)[O-])cc1,12,12,0,0,cycle_not_5,cycle_not_5,0,0,top0_atom0
+50,mutag_smiles.smi,O=[N+]([O-])c1cccc2c([N+](=O)[O-])cccc12,16,17,0,0,cycle_not_5,cycle_not_5,0,0,top0_atom0

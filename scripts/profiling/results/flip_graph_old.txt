@@ -1,0 +1,48 @@
+         19904508 function calls (19884503 primitive calls) in 13.477 seconds
+
+   Ordered by: cumulative time
+   List reduced from 109 to 40 due to restriction <40>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    10000    3.368    0.000   13.477    0.001 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\profiling\run_all_profiles.py:61(_build_flip_graph_old)
+   667367    2.625    0.000    6.947    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\numpy\lib\index_tricks.py:34(ix_)
+  1334734    1.169    0.000    2.676    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\numpy\core\numerictypes.py:357(issubdtype)
+30000/20000    0.040    0.000    1.426    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\utils\backends.py:627(__call__)
+   483159    0.217    0.000    1.414    0.000 {method 'sum' of 'numpy.ndarray' objects}
+  2669468    0.962    0.000    1.372    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\numpy\core\numerictypes.py:283(issubclass_)
+   483159    0.169    0.000    1.196    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\numpy\core\_methods.py:47(_sum)
+   483159    1.027    0.000    1.027    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+    10000    0.015    0.000    0.930    0.000 <class 'networkx.utils.decorators.argmap'> compilation 40:1(argmap_to_numpy_array_37)
+    10000    0.394    0.000    0.901    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\convert_matrix.py:785(to_numpy_array)
+  1344734    0.757    0.000    0.757    0.000 {built-in method numpy.asarray}
+  4004202    0.545    0.000    0.545    0.000 {built-in method builtins.issubclass}
+    10000    0.021    0.000    0.532    0.000 <class 'networkx.utils.decorators.argmap'> compilation 4:1(argmap_from_numpy_array_1)
+    10000    0.080    0.000    0.493    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\convert_matrix.py:1024(from_numpy_array)
+  1334734    0.493    0.000    0.493    0.000 {method 'reshape' of 'numpy.ndarray' objects}
+1902863/1892863    0.211    0.000    0.214    0.000 {built-in method builtins.len}
+  1776035    0.194    0.000    0.194    0.000 {method 'append' of 'list' objects}
+  1334764    0.179    0.000    0.179    0.000 {built-in method builtins.isinstance}
+   120149    0.129    0.000    0.172    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\reportviews.py:847(__iter__)
+    10000    0.009    0.000    0.168    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:1925(number_of_edges)
+    10000    0.023    0.000    0.160    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:1882(size)
+    20000    0.117    0.000    0.143    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:566(add_nodes_from)
+    10000    0.015    0.000    0.136    0.000 <class 'networkx.utils.decorators.argmap'> compilation 8:1(argmap_empty_graph_5)
+    10000    0.019    0.000    0.130    0.000 {built-in method builtins.sum}
+    10000    0.049    0.000    0.125    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:968(add_edges_from)
+    10000    0.012    0.000    0.113    0.000 <class 'networkx.utils.decorators.argmap'> compilation 12:1(argmap_empty_graph_9)
+   120828    0.040    0.000    0.111    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:1918(<genexpr>)
+    10000    0.057    0.000    0.087    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\profiling\run_all_profiles.py:54(_group_nodes_by_color)
+    10000    0.018    0.000    0.083    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\generators\classic.py:552(empty_graph)
+   667367    0.081    0.000    0.081    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\numpy\lib\index_tricks.py:30(_ix__dispatcher)
+   120828    0.060    0.000    0.071    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\reportviews.py:529(__iter__)
+    10000    0.043    0.000    0.060    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\numpy\core\numeric.py:274(full)
+    30452    0.023    0.000    0.059    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\convert_matrix.py:1190(<genexpr>)
+    10000    0.031    0.000    0.047    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:332(__init__)
+    10000    0.014    0.000    0.037    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\reportviews.py:1093(__call__)
+    30452    0.037    0.000    0.037    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\convert_matrix.py:1147(<genexpr>)
+   110149    0.029    0.000    0.029    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\reportviews.py:781(<lambda>)
+    10000    0.025    0.000    0.025    0.000 {method 'nonzero' of 'numpy.ndarray' objects}
+   161734    0.024    0.000    0.024    0.000 {method 'update' of 'dict' objects}
+    10000    0.023    0.000    0.023    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\reportviews.py:762(__init__)
+
+

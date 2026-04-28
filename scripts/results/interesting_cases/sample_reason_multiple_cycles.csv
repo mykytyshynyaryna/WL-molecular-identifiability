@@ -1,0 +1,13 @@
+molecule_id,dataset_name,smiles,n_nodes,n_edges,top_bouquet_forest_verdict,atom_bouquet_forest_verdict,top_bouquet_forest_reason,atom_bouquet_forest_reason,top_has_bouquet_component,atom_has_bouquet_component
+149521265,BDAD.smi,CC1(CSCC2(C)COC2)COC1,13,14,0,0,multiple_cycles_in_component,cycle_not_5,0,0
+1119535034,BDAD.smi,c1cnn(CCSCc2cc[nH]n2)c1,14,15,0,1,multiple_cycles_in_component,ok,0,0
+641652077,CBAD.smi,O=S1(=O)CC(NS(=O)(=O)CC2CC(F)(F)C2)C1,17,18,0,1,multiple_cycles_in_component,ok,0,0
+631969779,CBAD.smi,O=S(=O)(N1C[C@H]2CC[C@H]1C2)N1C[C@@H]2C[C@H]1CN2,17,20,0,1,multiple_cycles_in_component,ok,0,0
+2382360258,BEAD.smi,Nc1c2c(c(Br)c3c1CC3)CC2,12,14,0,0,multiple_cycles_in_component,cycle_not_5,0,0
+1119603579,BEAD.smi,c1nnc(CSCC[C@H]2CCOC2)s1,14,15,0,1,multiple_cycles_in_component,ok,0,0
+1333735862,BCAD.smi,c1cnn(CCSCc2nc[nH]n2)c1,14,15,0,1,multiple_cycles_in_component,ok,0,0
+1339183403,BCAD.smi,c1nc(CCOCc2nn[nH]n2)cs1,14,15,0,1,multiple_cycles_in_component,ok,0,0
+139000695,BDAA.smi,C(CCC1OCCO1)CC1OCCO1,14,15,0,0,multiple_cycles_in_component,petals_not_isomorphic,0,0
+2498922,BDAA.smi,c1cn(CCCN[C@H]2CCSC2)cn1,14,15,0,1,multiple_cycles_in_component,ok,0,0
+1676906,BDAB.smi,C1COP(OCCOP2OCCO2)O1,14,15,0,0,multiple_cycles_in_component,multiple_cycles_in_component,0,0
+20126769,BDAB.smi,c1csc(CNCCN2CCCC2)c1,14,15,0,1,multiple_cycles_in_component,ok,0,0

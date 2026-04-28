@@ -1,0 +1,48 @@
+         6689378 function calls (6531656 primitive calls) in 3.420 seconds
+
+   Ordered by: cumulative time
+   List reduced from 208 to 40 due to restriction <40>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    10000    0.009    0.000    3.420    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\profiling\run_all_profiles.py:87(<lambda>)
+    10000    0.053    0.000    3.412    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:409(_check_bouquet_component_baseline)
+     2321    0.043    0.000    1.488    0.001 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:198(_extract_petals)
+46252/43647    0.034    0.000    1.043    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\utils\backends.py:627(__call__)
+    16252    0.049    0.000    0.795    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:1566(copy)
+    18573    0.122    0.000    0.564    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:968(add_edges_from)
+    24322    0.015    0.000    0.477    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:1925(number_of_edges)
+    23926    0.039    0.000    0.462    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:1882(size)
+    24210    0.030    0.000    0.448    0.000 <class 'networkx.utils.decorators.argmap'> compilation 17:1(argmap_is_connected_13)
+71346/59741    0.073    0.000    0.427    0.000 {built-in method builtins.sum}
+    24210    0.039    0.000    0.388    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\algorithms\components\connected.py:111(is_connected)
+     7395    0.012    0.000    0.363    0.000 <class 'networkx.utils.decorators.argmap'> compilation 27:1(argmap_cycle_basis_22)
+    59472    0.058    0.000    0.334    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:1648(<genexpr>)
+   126115    0.093    0.000    0.333    0.000 <frozen _collections_abc>:859(__iter__)
+     7395    0.161    0.000    0.333    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\algorithms\cycles.py:25(cycle_basis)
+    18573    0.143    0.000    0.299    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:566(add_nodes_from)
+    11605    0.018    0.000    0.292    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:78(_is_valid_tree_structure)
+   171582    0.058    0.000    0.286    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:1918(<genexpr>)
+    10000    0.009    0.000    0.283    0.000 <class 'networkx.utils.decorators.argmap'> compilation 21:1(argmap_is_tree_18)
+729266/658419    0.096    0.000    0.273    0.000 {built-in method builtins.len}
+    16247    0.031    0.000    0.271    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:1768(subgraph)
+    10000    0.014    0.000    0.268    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\algorithms\tree\recognition.py:218(is_tree)
+   172136    0.086    0.000    0.228    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\reportviews.py:529(__iter__)
+    35815    0.164    0.000    0.218    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\algorithms\components\connected.py:198(_plain_bfs)
+     2321    0.009    0.000    0.216    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:41(_build_graph_without_edges)
+     2321    0.013    0.000    0.205    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:51(_compute_canonical_cycle_order)
+   183676    0.068    0.000    0.182    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\coreviews.py:293(<genexpr>)
+     4647    0.021    0.000    0.180    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:188(_add_root_marker)
+    16247    0.020    0.000    0.174    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\utils\decorators.py:1267(inner_f)
+     2326    0.004    0.000    0.172    0.000 {built-in method builtins.any}
+    13926    0.011    0.000    0.168    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:437(<genexpr>)
+    35713    0.018    0.000    0.156    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\reportviews.py:426(__call__)
+    23210    0.016    0.000    0.154    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\coreviews.py:283(__len__)
+    16247    0.064    0.000    0.150    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graphviews.py:135(subgraph_view)
+    35718    0.071    0.000    0.140    0.000 C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\functools.py:981(__get__)
+   153630    0.097    0.000    0.139    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\coreviews.py:341(new_node_ok)
+     4642    0.023    0.000    0.126    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:62(_build_order)
+    11605    0.012    0.000    0.117    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\reportviews.py:520(__getitem__)
+    54114    0.028    0.000    0.114    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:1647(<genexpr>)
+    76285    0.079    0.000    0.109    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\coreviews.py:338(__getitem__)
+
+

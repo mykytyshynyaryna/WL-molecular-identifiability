@@ -1,0 +1,34 @@
+         4750107 function calls in 2.523 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    10000    0.015    0.000    2.523    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\profiling\run_all_profiles.py:90(<lambda>)
+    10000    1.131    0.000    2.509    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\flip_graph.py:14(build_flip_graph_from_labels)
+   483159    0.191    0.000    0.744    0.000 {built-in method builtins.sum}
+   581520    0.296    0.000    0.526    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\flip_graph.py:61(<genexpr>)
+   918324    0.314    0.000    0.423    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:1318(neighbors)
+    10000    0.107    0.000    0.129    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:566(add_nodes_from)
+  1173566    0.122    0.000    0.122    0.000 {built-in method builtins.len}
+   928324    0.110    0.000    0.110    0.000 {built-in method builtins.iter}
+    10000    0.065    0.000    0.097    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\flip_graph.py:6(_group_nodes_by_color)
+    10000    0.026    0.000    0.036    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:968(add_edges_from)
+    10000    0.021    0.000    0.032    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:332(__init__)
+    11788    0.013    0.000    0.027    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\flip_graph.py:31(<genexpr>)
+   100037    0.025    0.000    0.025    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:1277(has_edge)
+   141280    0.020    0.000    0.020    0.000 {method 'update' of 'dict' objects}
+   110828    0.017    0.000    0.017    0.000 {method 'setdefault' of 'dict' objects}
+   121054    0.015    0.000    0.015    0.000 {method 'append' of 'list' objects}
+    20000    0.008    0.000    0.012    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\utils\misc.py:595(_clear_cache)
+    10000    0.005    0.000    0.007    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\reportviews.py:185(__iter__)
+    10000    0.006    0.000    0.006    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:59(__set__)
+    10000    0.003    0.000    0.005    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\reportviews.py:182(__len__)
+    20000    0.003    0.000    0.003    0.000 {built-in method builtins.getattr}
+    10000    0.003    0.000    0.003    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\graph.py:37(__set__)
+    10000    0.002    0.000    0.002    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\reportviews.py:205(__call__)
+    10226    0.002    0.000    0.002    0.000 {method 'get' of 'dict' objects}
+    10000    0.002    0.000    0.002    0.000 {method 'keys' of 'dict' objects}
+    10000    0.002    0.000    0.002    0.000 {method 'items' of 'dict' objects}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+
+

@@ -1,0 +1,4 @@
+reason,n,category
+cycle_not_5,301,not_c5_cycle
+multiple_cycles_in_component,224,multiple_cycles
+petals_not_isomorphic,25,petals_not_isomorphic

@@ -1,0 +1,3 @@
+molecule_id,dataset_name,smiles,n_nodes,n_edges,top_bouquet_forest_verdict,atom_bouquet_forest_verdict,top_bouquet_forest_reason,atom_bouquet_forest_reason,top_has_bouquet_component,atom_has_bouquet_component,verdict_pattern
+988,nci109_smiles.smi,C1CC2[Cl+][Cl+][Cl+]C2C1,8,9,0,1,cycle_not_5,ok,0,0,top0_atom1
+195,nci109_smiles.smi,OC1CC(S)C2C(Br)[Cl+]C(Br)C12,12,13,0,1,cycle_not_5,ok,0,0,top0_atom1

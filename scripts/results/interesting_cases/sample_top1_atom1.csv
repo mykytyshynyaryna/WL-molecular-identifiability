@@ -1,0 +1,13 @@
+molecule_id,dataset_name,smiles,n_nodes,n_edges,top_bouquet_forest_verdict,atom_bouquet_forest_verdict,top_bouquet_forest_reason,atom_bouquet_forest_reason,top_has_bouquet_component,atom_has_bouquet_component,verdict_pattern
+167722841,BDAD.smi,Ic1ncns1,6,6,1,1,ok,ok,0,0,top1_atom1
+36456464,BDAD.smi,C/C(=C\I)C(=O)O,7,6,1,1,ok,ok,0,0,top1_atom1
+2386389814,CBAD.smi,Cn1cnc(I)c(N)c1=O,10,10,1,1,ok,ok,0,0,top1_atom1
+135838297,CBAD.smi,Cn1c(=O)[nH]c(N)c(I)c1=O,11,11,1,1,ok,ok,0,0,top1_atom1
+1911936356,BCAD.smi,O=C(O)[Sn]C(=O)O,7,6,1,1,ok,ok,0,0,top1_atom1
+135849152,BCAD.smi,Cc1nc(I)no1,7,7,1,1,ok,ok,0,0,top1_atom1
+112941071,BEAD.smi,Fc1csc(I)c1,7,7,1,1,ok,ok,0,0,top1_atom1
+145427604,BEAD.smi,Cc1ccc(I)o1,7,7,1,1,ok,ok,0,0,top1_atom1
+2332237429,BBAD.smi,[O]C(=O)[Sn]C([O])=O,7,6,1,1,ok,ok,0,0,top1_atom1
+90134730,BBAD.smi,COC(=O)[C@H](N)CI,8,7,1,1,ok,ok,0,0,top1_atom1
+1585337393,BDED.smi,N#Cc1nnc(I)s1,8,8,1,1,ok,ok,0,0,top1_atom1
+238588159,BDED.smi,N#Cc1cnc(I)s1,8,8,1,1,ok,ok,0,0,top1_atom1

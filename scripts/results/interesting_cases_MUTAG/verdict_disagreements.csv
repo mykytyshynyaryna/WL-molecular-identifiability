@@ -1,0 +1,2 @@
+molecule_id,dataset_name,smiles,top_v,atom_v,top_reason,atom_reason,top_cat,atom_cat
+88,mutag_smiles.smi,CC(=O)c1ccc([N+](=O)[O-])cc1,0,1,cycle_not_5,ok,not_c5_cycle,none

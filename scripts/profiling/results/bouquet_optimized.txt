@@ -1,0 +1,44 @@
+         1566250 function calls (1517840 primitive calls) in 0.645 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    10000    0.007    0.000    0.645    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\profiling\run_all_profiles.py:88(<lambda>)
+    10000    0.025    0.000    0.638    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:496(_check_bouquet_component_optimized)
+    10000    0.014    0.000    0.295    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:362(_check_bouquet_adj)
+    10000    0.100    0.000    0.252    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:506(<dictcomp>)
+     2321    0.060    0.000    0.183    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:304(_petal_signatures_adj)
+     5590    0.042    0.000    0.095    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:258(_find_c5_nodes_adj)
+     2321    0.016    0.000    0.074    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:359(<listcomp>)
+   110828    0.053    0.000    0.071    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\coreviews.py:80(__getitem__)
+25223/11605    0.024    0.000    0.058    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:348(_sig)
+    10000    0.017    0.000    0.058    0.000 {built-in method builtins.sum}
+25223/11605    0.015    0.000    0.046    0.000 {built-in method builtins.sorted}
+   110828    0.029    0.000    0.042    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\coreviews.py:49(__iter__)
+   120828    0.031    0.000    0.041    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:508(<genexpr>)
+38841/17667    0.016    0.000    0.040    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:350(<genexpr>)
+   110828    0.028    0.000    0.039    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\coreviews.py:46(__len__)
+   352143    0.033    0.000    0.033    0.000 {built-in method builtins.len}
+     5590    0.017    0.000    0.023    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:260(<dictcomp>)
+     2321    0.012    0.000    0.021    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:311(<setcomp>)
+   110828    0.017    0.000    0.017    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\coreviews.py:43(__init__)
+   120828    0.014    0.000    0.014    0.000 {built-in method builtins.iter}
+    72961    0.010    0.000    0.010    0.000 {method 'append' of 'list' objects}
+    48433    0.009    0.000    0.009    0.000 {built-in method builtins.max}
+    48433    0.008    0.000    0.008    0.000 {built-in method builtins.min}
+     5590    0.008    0.000    0.008    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:261(<listcomp>)
+    56995    0.007    0.000    0.007    0.000 {method 'add' of 'set' objects}
+    31772    0.005    0.000    0.005    0.000 {method 'pop' of 'list' objects}
+    10000    0.004    0.000    0.005    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\reportviews.py:185(__iter__)
+     2321    0.002    0.000    0.005    0.000 {built-in method builtins.any}
+     5590    0.005    0.000    0.005    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:271(<listcomp>)
+    11605    0.004    0.000    0.004    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:342(<listcomp>)
+    25223    0.003    0.000    0.003    0.000 {method 'get' of 'dict' objects}
+    13926    0.003    0.000    0.003    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:274(<genexpr>)
+     7679    0.003    0.000    0.003    0.000 C:\Users\yaryn\OneDrive\Desktop\Thesis\Is_1_WL_Expressivity_Sufficient_for_Molecular_Graphs\wl_identifiability\bouquet.py:175(_not_bouquet_result)
+    10000    0.002    0.000    0.002    0.000 C:\Users\yaryn\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\networkx\classes\reportviews.py:205(__call__)
+    10000    0.001    0.000    0.001    0.000 {method 'values' of 'dict' objects}
+    11180    0.001    0.000    0.001    0.000 {method 'items' of 'dict' objects}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+
+
