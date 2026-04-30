@@ -1,12 +1,26 @@
 # Is 1-WL Expressivity Sufficient for Molecular Graphs?
 
-A thesis project investigating whether the **1-Weisfeiler-Lehman (1-WL) graph isomorphism test** can uniquely identify every molecule in large chemical and biochemical graph datasets. The analysis is grounded in the theoretical framework of Kiefer (2020) — specifically the bouquet forest characterisation of non-identifiable graphs (Theorem 17).
+A thesis project investigating whether the **1-Weisfeiler-Lehman (1-WL) graph isomorphism test** can uniquely identify every molecule in large chemical and biochemical graph datasets. The analysis is grounded in the theoretical framework of Kiefer (2020) — specifically the bouquet forest characterisation of non-identifiable graphs.
 
 ---
 
 ## Research question
 
 > Can the 1-WL algorithm distinguish every molecule in a standard benchmark dataset based solely on graph structure and atomic labels?
+
+---
+
+## Background
+
+**1-Weisfeiler-Lehman (1-WL) test** is an iterative colour-refinement algorithm on graphs. Each node starts with an initial colour (label); at every step every node aggregates the multiset of colours of its neighbours and hashes it into a new colour. The process stops when no colour changes. Two graphs are considered *non-isomorphic* by 1-WL if they produce different final colour histograms, and *potentially isomorphic* otherwise.
+
+**Two WL modes used in this project:**
+- *Topological* — initial node colour is uniform (degree only, no atom labels).
+- *Atom-aware* — initial node colour encodes the atomic symbol and formal charge, so chemical identity matters from the first iteration.
+
+**Bouquet forest** (Kiefer 2020, Definition 9 / Theorem 17): a graph is a *bouquet* if it consists of a single C₅ cycle with zero or more pendant trees ("petals") attached at one vertex. A *bouquet forest* is a disjoint union of isomorphic bouquets. Theorem 17 states that a graph is *not* uniquely identified by 1-WL if and only if its flip graph decomposes into a bouquet forest with at least two components.
+
+**Reference:** Kiefer, S. (2020). *The Weisfeiler-Leman Algorithm: Its Power and Limitations.* Habilitation thesis, RWTH Aachen University.
 
 ---
 
@@ -39,6 +53,8 @@ Across **16,085,612 molecules** (MUTAG + NCI1 + NCI109 + ZINC20):
 | Component cycle ≠ C₅ | 58,242 | 28,997 |
 | Petals not isomorphic | 34,089 | 2,416 |
 | Multiple cycles in component | 3,248 | 1,178 |
+
+**Interpreting verdicts:** A molecule is called *identifiable* (verdict = 1) when its flip graph is a bouquet forest — meaning 1-WL is sufficient to distinguish it from all structurally similar molecules. "Both WL modes accept" means identifiable under both topological and atom-aware coloring. "Both reject" means 1-WL cannot distinguish the molecule regardless of whether atom labels are used.
 
 See `notebooks/` for per-dataset breakdowns and visualisations of interesting cases.
 
@@ -113,6 +129,26 @@ pip install -e ".[dev]" --no-deps
 
 Python 3.10–3.12 required.
 
+**Key dependency versions (resolved by pixi):**
+
+| Package | Version |
+|---------|---------|
+| Python | 3.10 – 3.12 |
+| RDKit | ≥ 2023.09 |
+| NetworkX | ≥ 3.1 |
+| pandas | ≥ 2.0 |
+| pytest | ≥ 7.0 |
+
+**Recommended first steps after install:**
+
+```bash
+# 1. Verify installation
+pixi run test
+
+# 2. Run a quick smoke test on a small sample
+python examples/run_pipeline.py --data data/MUTAG.smi --sample 50
+```
+
 ---
 
 ## Running the pipeline
@@ -136,7 +172,6 @@ python examples/run_pipeline.py --data data/AAAA.smi --workers 4 --sample 500
 ### `scripts/pipeline/run_pipeline.py` — richer CLI
 
 ```bash
-python scripts/pipeline/run_pipeline.py --smi data/ZINC20/zinc250k.smi --workers 4
 python scripts/pipeline/run_pipeline.py --smi data/MUTAG.smi --limit 1000 --wl-steps 3
 ```
 
@@ -237,6 +272,13 @@ python scripts/benchmarks/benchmark_flip_graph.py --data data/AAAC.smi --reps 20
 
 Jupyter notebooks in `notebooks/` contain per-dataset analysis of non-identifiable molecules (cases where the bouquet forest criterion fails or gives unexpected results).
 
+| Notebook | Contents |
+|----------|----------|
+| `interesting_cases_analysis_MUTAG.ipynb` | Size/degree distribution of non-identifiable MUTAG molecules; visualisation of WL coloring on representative examples |
+| `interesting_cases_analysis_NCI1.ipynb` | Breakdown of rejection reasons for NCI1; structural motifs common in non-identifiable anti-cancer compounds |
+| `interesting_cases_analysis_NCI109.ipynb` | Comparison of NCI109 rejection patterns vs NCI1; overlap between the two datasets |
+| `interesting_cases_analysis_ZINC20.ipynb` | Scale analysis of 16 M ZINC20 molecules; histogram of non-identifiable SMILES and their pharmacophore classes |
+
 ```bash
 jupyter notebook notebooks/
 ```
@@ -262,6 +304,33 @@ Key columns in `all_results.db`:
 | `n_colors_top` / `n_colors_atom` | WL color counts (topological / atom-aware) |
 | `top_bouquet_forest_verdict` | `1` = bouquet forest (topological WL) |
 | `atom_bouquet_forest_verdict` | `1` = bouquet forest (atom-aware WL) |
+
+**Example SQLite queries:**
+
+```sql
+-- Count identifiable molecules per dataset
+SELECT dataset_name,
+       SUM(atom_bouquet_forest_verdict) AS identifiable,
+       COUNT(*) AS total
+FROM results
+GROUP BY dataset_name;
+
+-- Fetch all non-identifiable molecules from MUTAG
+SELECT molecule_id, smiles, n_nodes, n_edges
+FROM results
+WHERE dataset_name = 'MUTAG.smi'
+  AND atom_bouquet_forest_verdict = 0;
+```
+
+**`summary.csv` columns:**
+
+| Column | Description |
+|--------|-------------|
+| `dataset_name` | Source file name |
+| `total` | Total molecules processed |
+| `identifiable_top` | Identifiable count (topological WL) |
+| `identifiable_atom` | Identifiable count (atom-aware WL) |
+| `pct_identifiable_atom` | Percentage identifiable (atom-aware) |
 
 ---
 
@@ -289,6 +358,32 @@ Key columns in `all_results.db`:
 
 ---
 
+## Reproducibility
+
+The full results reported in the thesis (16,085,612 molecules) were produced on a single workstation with the following command sequence:
+
+```bash
+pixi install
+pixi run test            # sanity check
+
+for f in data/*.smi; do
+    python examples/run_pipeline.py --data "$f" --workers 8
+done
+```
+
+**Approximate runtimes** (8-core CPU, ~16 GB RAM):
+
+| Dataset | Molecules | Wall time |
+|---------|-----------|-----------|
+| MUTAG | 188 | < 1 min |
+| NCI1 | 4 110 | ~2 min |
+| NCI109 | 4 127 | ~2 min |
+| ZINC20 | ~16 M | ~12 h |
+
+Results are written to `results/all_results.db` and `results/summary.csv` as the pipeline runs (crash-safe via SQLite transactions).
+
+---
+
 ## Troubleshooting
 
 **`ImportError: No module named 'wl_identifiability'`** — run `pixi install` or `pip install -e .`.
@@ -296,3 +391,27 @@ Key columns in `all_results.db`:
 **`ImportError: No module named 'rdkit'`** — use `pixi install` or `conda install -c conda-forge rdkit`.
 
 **`FileNotFoundError: data/AAAA.smi`** — place the file in `data/` or pass `--data`/`--smi` explicitly.
+
+---
+
+## Citation
+
+If you use this code or results in your work, please cite:
+
+```bibtex
+@mastersthesis{mykytyshyn2026wl,
+  author  = {Yaryna Mykytyshyn},
+  title   = {Is 1-WL Expressivity Sufficient for Molecular Graphs?},
+  school  = {},
+  year    = {2026},
+  url     = {https://github.com/yaryna/WL-molecular-identifiability}
+}
+```
+
+---
+
+## Author
+
+**Yaryna Mykytyshyn** — thesis project, 2026.
+
+
