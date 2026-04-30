@@ -402,7 +402,6 @@ If you use this code or results in your work, please cite:
 @mastersthesis{mykytyshyn2026wl,
   author  = {Yaryna Mykytyshyn},
   title   = {Is 1-WL Expressivity Sufficient for Molecular Graphs?},
-  school  = {},
   year    = {2026},
   url     = {https://github.com/yaryna/WL-molecular-identifiability}
 }
