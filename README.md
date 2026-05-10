@@ -224,6 +224,25 @@ python "scripts/download/download data/download_zinc.py"
 
 See [scripts/download/README_downloads.md](scripts/download/README_downloads.md) for details.
 
+The pipeline reads `.smi` files (space-separated SMILES with an ID column). ZINC is already in this format. MUTAG, NCI1, and NCI109 are in TU Dortmund graph format and need to be converted first.
+
+```bash
+python "scripts/download/parsing data/parse_mutag_to_smiles.py"
+python "scripts/download/parsing data/parse_nci1_to_smiles.py"
+python "scripts/download/parsing data/parse_nci109_to_smiles.py"
+```
+
+This creates:
+
+```
+data/processed/
+├── MUTAG/mutag_smiles.smi
+├── NCI1/nci1_smiles.smi
+└── NCI109/nci109_smiles.smi
+```
+
+> Parsing requires rdkit. Rows that rdkit cannot reconstruct into a valid molecule are silently skipped.
+
 ---
 
 ## Tests
