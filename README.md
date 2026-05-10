@@ -114,16 +114,16 @@ All datasets go into `data/raw/`. Run from the project root.
 **Download everything at once:**
 
 ```bash
-python "scripts/download/download data/download_all.py"
+python scripts/download/download_data/download_all.py
 ```
 
 **Or download individually:**
 
 ```bash
-python "scripts/download/download data/download_mutag.py"
-python "scripts/download/download data/download_nci1.py"
-python "scripts/download/download data/download_nci109.py"
-python "scripts/download/download data/download_zinc.py"
+python scripts/download/download_data/download_mutag.py
+python scripts/download/download_data/download_nci1.py
+python scripts/download/download_data/download_nci109.py
+python scripts/download/download_data/download_zinc.py
 ```
 
 After downloading, `data/raw/` will look like:
@@ -150,9 +150,9 @@ data/raw/
 The pipeline reads `.smi` files (space-separated SMILES with an ID column). ZINC is already in this format. MUTAG, NCI1, and NCI109 are in TU Dortmund graph format and need to be converted first.
 
 ```bash
-python "scripts/download/parsing data/parse_mutag_to_smiles.py"
-python "scripts/download/parsing data/parse_nci1_to_smiles.py"
-python "scripts/download/parsing data/parse_nci109_to_smiles.py"
+python scripts/download/parsing_data/parse_mutag_to_smiles.py
+python scripts/download/parsing_data/parse_nci1_to_smiles.py
+python scripts/download/parsing_data/parse_nci109_to_smiles.py
 ```
 
 This creates:

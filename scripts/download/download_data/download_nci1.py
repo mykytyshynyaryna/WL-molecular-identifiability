@@ -1,32 +1,32 @@
 """
-Download the NCI109 chemical graph dataset.
+Download the NCI1 chemical graph dataset.
 
-Primary source  : https://www.chrsmrrs.com/graphkerneldatasets/NCI109.zip  (TU Dortmund)
-Target          : data/raw/NCI109/
+Primary source  : https://www.chrsmrrs.com/graphkerneldatasets/NCI1.zip  (TU Dortmund)
+Target          : data/raw/NCI1/
 
-The archive extracts into NCI109/ with plain-text files:
-    NCI109_A.txt              - edge list
-    NCI109_graph_indicator.txt
-    NCI109_graph_labels.txt
-    NCI109_node_labels.txt
+The archive extracts into NCI1/ with plain-text files:
+    NCI1_A.txt              - edge list
+    NCI1_graph_indicator.txt
+    NCI1_graph_labels.txt
+    NCI1_node_labels.txt
     README.txt
 
-NCI109 contains ~4127 chemical compounds screened for activity against
-ovarian cancer cell lines (companion dataset to NCI1).  Node labels encode atom type.
+NCI1 contains ~4110 chemical compounds screened for activity against
+non-small-cell lung cancer.  Node labels encode atom type.
 
 Note on SDF format
 ------------------
-The original NCI109 compound-set SDF files were distributed by the NCI DTP program.
+The original NCI compound-set SDF files were distributed by the NCI DTP program.
 # TODO: Verify and add a direct, stable NCI SDF download URL:
 #   https://dtp.cancer.gov/databases_tools/bulk_data.htm
 #   (access may require navigating the NCI DTP download portal)
 #
 # Alternative mirror (if available):
-#   https://raw.githubusercontent.com/CHEMPHY/datasets/main/NCI109/NCI109.sdf
+#   https://raw.githubusercontent.com/CHEMPHY/datasets/main/NCI1/NCI1.sdf
 # TODO: Replace with a confirmed stable URL before using in production.
 
 Usage:
-    python scripts/download/download_nci109.py
+    python scripts/download/download_nci1.py
 """
 from __future__ import annotations
 
@@ -35,10 +35,10 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-DATASET_NAME = "NCI109"
-SOURCE_URL = "https://www.chrsmrrs.com/graphkerneldatasets/NCI109.zip"
+DATASET_NAME = "NCI1"
+SOURCE_URL = "https://www.chrsmrrs.com/graphkerneldatasets/NCI1.zip"
 
-ROOT_DIR = Path(__file__).resolve().parents[2]
+ROOT_DIR = Path(__file__).resolve().parents[3]
 TARGET_DIR = ROOT_DIR / "data" / "raw" / DATASET_NAME
 
 
@@ -73,7 +73,7 @@ def extract_zip(archive: Path, target_dir: Path) -> None:
 
 
 def main() -> int:
-    """Download and extract the NCI109 dataset."""
+    """Download and extract the NCI1 dataset."""
     print(f"=== Downloading {DATASET_NAME} ===")
     TARGET_DIR.mkdir(parents=True, exist_ok=True)
 

@@ -29,7 +29,7 @@ import sys
 from pathlib import Path
 from collections import defaultdict
 
-ROOT_DIR = Path(__file__).resolve().parents[2]
+ROOT_DIR = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT_DIR))
 
 from rdkit import Chem

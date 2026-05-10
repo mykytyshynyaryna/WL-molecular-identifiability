@@ -33,7 +33,7 @@ from pathlib import Path
 DATASET_NAME = "MUTAG"
 SOURCE_URL = "https://www.chrsmrrs.com/graphkerneldatasets/MUTAG.zip"
 
-ROOT_DIR = Path(__file__).resolve().parents[2]
+ROOT_DIR = Path(__file__).resolve().parents[3]
 TARGET_DIR = ROOT_DIR / "data" / "raw" / DATASET_NAME
 
 

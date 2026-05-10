@@ -26,7 +26,7 @@ from pathlib import Path
 from threading import Lock
 
 
-ROOT_DIR = Path(__file__).resolve().parents[2]
+ROOT_DIR = Path(__file__).resolve().parents[3]
 DEFAULT_URI = ROOT_DIR / "ZINC-downloader-2D-smi.uri"
 DEFAULT_OUT = ROOT_DIR / "data" / "raw" / "ZINC20"
 DEFAULT_WORKERS = 3

@@ -47,7 +47,7 @@ SOURCE_URL = (
     "models/zinc_properties/250k_rndm_zinc_drugs_clean_3.csv"
 )
 
-ROOT_DIR = Path(__file__).resolve().parents[2]
+ROOT_DIR = Path(__file__).resolve().parents[3]
 TARGET_DIR = ROOT_DIR / "data" / "raw" / DATASET_NAME
 SMI_FILE = TARGET_DIR / "zinc250k.smi"
 
