@@ -61,7 +61,6 @@ from .bouquet import (
     check_bouquet_component,
     analyze_bouquet_forest_structure,
     is_bouquet_component,
-    compare_bouquet_methods,
     rooted_tree_signature,
 )
 from .visualization import draw_graph_wl_coloring, inspect_wl_behavior
@@ -90,7 +89,6 @@ __all__ = [
     "check_bouquet_component",
     "analyze_bouquet_forest_structure",
     "is_bouquet_component",
-    "compare_bouquet_methods",
     "rooted_tree_signature",
     "compute_label_histogram",
     "normalize_node_labels",

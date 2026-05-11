@@ -65,8 +65,8 @@ def classify_between_class_relation(
     Qset = set(Q)
     Pset = set(P)
 
-    k_vals = [sum(1 for v in F.neighbors(u) if v in Qset) for u in P]
-    l_vals = [sum(1 for v in F.neighbors(u) if v in Pset) for u in Q]
+    k_vals = [sum(1 for v in F.neighbors(u) if v in Qset) if F.has_node(u) else 0 for u in P]
+    l_vals = [sum(1 for v in F.neighbors(u) if v in Pset) if F.has_node(u) else 0 for u in Q]
 
     if len(set(k_vals)) != 1 or len(set(l_vals)) != 1:
         return REL_IRREGULAR, -1, -1
@@ -102,6 +102,7 @@ def classify_within_class_structure(F: nx.Graph, P: list) -> str:
         return "empty"
 
     H = F.subgraph(P).copy()
+    H.add_nodes_from(P)
     n = H.number_of_nodes()
     m = H.number_of_edges()
 
@@ -113,13 +114,15 @@ def classify_within_class_structure(F: nx.Graph, P: list) -> str:
     if all(d == 1 for d in degrees) and n % 2 == 0 and m == n // 2:
         return "matching"
 
-    if (
-        n == 5
-        and m == 5
-        and all(d == 2 for d in degrees)
-        and nx.is_connected(H)
-    ):
-        return "cycle5"
+    active = [v for v in H.nodes() if H.degree(v) > 0]
+    if len(active) == 5:
+        H5 = H.subgraph(active)
+        if (
+            H5.number_of_edges() == 5
+            and all(d == 2 for _, d in H5.degree())
+            and nx.is_connected(H5)
+        ):
+            return "cycle5"
 
     return "other"
 

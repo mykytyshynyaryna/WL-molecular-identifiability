@@ -74,6 +74,8 @@ def _compute_canonical_cycle_order(G: nx.Graph, cycle_nodes: list) -> list:
 
 def _is_valid_tree_structure(G: nx.Graph) -> bool:
     """Return True if G is a connected tree."""
+    if G.is_directed():
+        return False
     n = G.number_of_nodes()
     if n == 0:
         return False
@@ -160,7 +162,7 @@ def _compute_bouquet_signature(G: nx.Graph, labels: dict | None = None) -> str |
     signature of any single petal uniquely identifies the bouquet up to isomorphism —
     signature equality replaces full graph isomorphism checks entirely.
     """
-    result = is_bouquet_component(G, method="optimized", labels=labels)
+    result = is_bouquet_component(G, labels=labels)
     if not result["is_bouquet"]:
         return None
     return _sig_from_bouquet_result(result)
@@ -231,6 +233,33 @@ def rooted_tree_signature(T: nx.Graph, root: Hashable) -> tuple:
         return tuple(sorted(_sig(c, v) for c in T.neighbors(v) if c != parent))
 
     return _sig(root, None)
+
+
+def _compute_tree_wl_signature(T: nx.Graph) -> str:
+    """Return a canonical string signature for an unrooted tree.
+
+    Uses the tree centroid(s) as root so the signature is independent of node
+    labelling.  Two trees are isomorphic iff their signatures are equal.
+    """
+    if T.number_of_nodes() == 0:
+        return "()"
+    # Find centroid(s) by repeated leaf removal
+    remaining = set(T.nodes())
+    degree = {v: T.degree(v) for v in remaining}
+    leaves = {v for v in remaining if degree[v] <= 1}
+    while len(remaining) > 2:
+        next_leaves: set = set()
+        for leaf in leaves:
+            remaining.discard(leaf)
+            for nb in T.neighbors(leaf):
+                if nb in remaining:
+                    degree[nb] -= 1
+                    if degree[nb] == 1:
+                        next_leaves.add(nb)
+        leaves = next_leaves
+    centroids = list(remaining)
+    sigs = sorted(str(rooted_tree_signature(T, c)) for c in centroids)
+    return "|".join(sigs)
 
 
 def _rooted_colored_signature(T: nx.Graph, root: Hashable, labels: dict) -> tuple:
@@ -354,7 +383,7 @@ def _check_bouquet_adj(
     labels: dict | None,
 ) -> dict:
     """Core bouquet check on a plain adjacency dict with pre-computed n and m."""
-    method = "optimized"
+    method = "optimize"
     if m == n - 1:
         return _not_bouquet_result(method, "is_tree")
     if m != n:
@@ -391,91 +420,7 @@ def _check_bouquet_adj(
 
 
 
-def _check_bouquet_component_baseline(
-    G: nx.Graph,
-    labels: dict | None = None,
-) -> dict:
-    """
-    Reference bouquet checker using nx.cycle_basis and nx.is_isomorphic.
-
-    Verifies connectivity, a unique induced C₅, five valid petal trees, and
-    pairwise isomorphism of those petals (with color matching when labels given).
-    """
-    method = "baseline"
-
-    if not nx.is_connected(G):
-        return _not_bouquet_result(method, "not_connected")
-
-    if nx.is_tree(G):
-        return _not_bouquet_result(method, "is_tree")
-
-    cycles = nx.cycle_basis(G)
-    if len(cycles) != 1:
-        return _not_bouquet_result(method, "not_exactly_one_cycle")
-
-    cyc = cycles[0]
-    if len(cyc) != 5:
-        return _not_bouquet_result(method, "cycle_length_not_5")
-
-    C = set(cyc)
-    H_cyc = G.subgraph(C)
-    if H_cyc.number_of_edges() != 5 or any(
-        H_cyc.degree(v) != 2 for v in H_cyc.nodes()
-    ):
-        return _not_bouquet_result(method, "cycle_not_induced_c5")
-
-    cyc_ord = _compute_canonical_cycle_order(G, cyc)
-    ok, petals = _extract_petals(G, cyc_ord)
-    if not ok:
-        return _not_bouquet_result(method, "invalid_petal_structure")
-
-    petal_list = list(petals.items())
-    ref_root, ref_T = petal_list[0]
-
-    if labels is not None:
-        node_match = lambda a, b: (
-            a["__is_root"] == b["__is_root"] and a["__color"] == b["__color"]
-        )
-    else:
-        node_match = lambda a, b: a["__is_root"] == b["__is_root"]
-
-    ref_marked = _add_root_marker(ref_T, ref_root, labels)
-    for root, T in petal_list[1:]:
-        if not nx.is_isomorphic(
-            _add_root_marker(T, root, labels), ref_marked, node_match=node_match
-        ):
-            if labels is not None:
-                sigs = [str(_rooted_colored_signature(t, r, labels)) for r, t in petal_list]
-            else:
-                sigs = [str(rooted_tree_signature(t, r)) for r, t in petal_list]
-            return {
-                "is_bouquet": False,
-                "method": method,
-                "reason": "petals_not_isomorphic",
-                "cycle_nodes": cyc_ord,
-                "cycle_length": 5,
-                "n_rooted_trees": len(petals),
-                "tree_signatures": sigs,
-            }
-
-    if labels is not None:
-        sigs = [str(_rooted_colored_signature(t, r, labels)) for r, t in petal_list]
-    else:
-        sigs = [str(rooted_tree_signature(t, r)) for r, t in petal_list]
-    return {
-        "is_bouquet": True,
-        "method": method,
-        "reason": "ok",
-        "cycle_nodes": cyc_ord,
-        "cycle_length": 5,
-        "n_rooted_trees": 5,
-        "tree_signatures": sigs,
-    }
-
-
-
-
-def _check_bouquet_component_optimized(
+def _check_bouquet_component(
     G: nx.Graph,
     labels: dict | None = None,
 ) -> dict:
@@ -495,7 +440,6 @@ def _check_bouquet_component_optimized(
 
 def is_bouquet_component(
     G: nx.Graph,
-    method: str = "optimized",
     labels: dict | None = None,
 ) -> dict:
     """
@@ -507,13 +451,7 @@ def is_bouquet_component(
     Returns a dict with keys: is_bouquet, method, reason, cycle_nodes,
     cycle_length, n_rooted_trees, tree_signatures.
     """
-    if method == "baseline":
-        return _check_bouquet_component_baseline(G, labels=labels)
-    if method == "optimized":
-        return _check_bouquet_component_optimized(G, labels=labels)
-    raise ValueError(
-        f"Unknown method {method!r}. Supported values: 'baseline', 'optimized'."
-    )
+    return _check_bouquet_component(G, labels=labels)
 
 
 
@@ -522,7 +460,7 @@ _COMPONENT_REASON_MAP: dict[str, str] = {
     "not_one_cycle_component":  "multiple_cycles_in_component",
     "no_unique_induced_c5":     "cycle_not_5",
     "invalid_petal_structure":  "invalid_petal_structure",
-    "petals_not_isomorphic":    "petals_not_isomorphic",
+    "petals_not_isomorphic":    "component_not_tree_nor_bouquet",
     "not_connected":            "disconnected_invalid_structure",
     "not_exactly_one_cycle":    "multiple_cycles_in_component",
     "cycle_length_not_5":       "cycle_not_5",
@@ -533,7 +471,6 @@ _COMPONENT_REASON_MAP: dict[str, str] = {
 def analyze_bouquet_forest_structure(
     F: nx.Graph,
     labels: dict | None = None,
-    method: str = "optimized",
 ) -> dict:
     """
     Test whether flip graph F is a bouquet forest (Theorem 17, Kiefer).
@@ -565,7 +502,6 @@ def analyze_bouquet_forest_structure(
       invalid_petal_structure      — petals do not form five valid rooted trees
       petals_not_isomorphic        — petal trees have different structures
       not_induced_c5               — five-cycle found but it is not induced
-      disconnected_invalid_structure — baseline: component is not connected
       component_not_tree_or_bouquet  — fallback for unrecognised structural issue
       duplicate_bouquet_signature  — two bouquets share the same isomorphism class
     """
@@ -579,12 +515,8 @@ def analyze_bouquet_forest_structure(
         if m_comp == n_comp - 1:
             continue
 
-        if method == "optimized":
-            adj = {v: list(F[v]) for v in comp_nodes}
-            result = _check_bouquet_adj(adj, n_comp, m_comp, labels)
-        else:
-            H = F.subgraph(comp_nodes)
-            result = _check_bouquet_component_baseline(H, labels=labels)
+        adj = {v: list(F[v]) for v in comp_nodes}
+        result = _check_bouquet_adj(adj, n_comp, m_comp, labels)
 
         if not result["is_bouquet"]:
             if invalid_reason is None:
@@ -626,7 +558,7 @@ def analyze_bouquet_forest_structure(
             "has_bouquet_component": True,
             "bouquets": bouquets,
             "non_identifiable": True,
-            "reason": "duplicate_bouquet_signature",
+            "reason": "duplicate_bouquets",
         }
 
     return {
@@ -661,9 +593,3 @@ def check_bouquet_component(
     return True, {"cycle": cycle, "petals": petals, "isomorphic_petals": True}
 
 
-def compare_bouquet_methods(G: nx.Graph, labels: dict | None = None) -> dict:
-    """Run both checkers on G and return their results for side-by-side comparison."""
-    return {
-        "baseline": _check_bouquet_component_baseline(G, labels=labels),
-        "optimized": _check_bouquet_component_optimized(G, labels=labels),
-    }

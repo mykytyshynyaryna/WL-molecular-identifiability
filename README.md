@@ -1,8 +1,6 @@
 # Is 1-WL Expressivity Sufficient for Molecular Graphs?
 
-> **Two branches in this repository:**
-> - [`main`](../../tree/main) — implementation only: the core `wl_identifiability` package, pipeline scripts, tests, and download utilities. No analysis, no results.
-> - [`thesis`](../../tree/thesis) *(this branch)* — everything in `main`, plus: research results across 16 M molecules, Jupyter notebooks with per-dataset analysis, profiling scripts, and the full thesis writeup context.
+> **Note:** This is the `main` branch — implementation only: the core `wl_identifiability` package, pipeline scripts, tests, and download utilities. The `thesis` branch additionally contains research results across 16 M molecules, Jupyter notebooks with per-dataset analysis, and the full thesis writeup context.
 
 This project investigates whether the **1-Weisfeiler-Lehman (1-WL) graph isomorphism test** can uniquely identify every molecule in standard benchmark datasets. The pipeline runs WL coloring on molecular graphs, builds a flip graph from the stable color partition, and checks each connected component against the bouquet forest criterion to detect non-identifiable molecules.
 
@@ -270,24 +268,7 @@ WHERE dataset_name = 'mutag_smiles.smi'
 
 ---
 
-## 7. Notebooks
-
-Jupyter notebooks in `notebooks/` contain per-dataset analysis of non-identifiable molecules.
-
-| Notebook | Contents |
-|----------|----------|
-| `interesting_cases_analysis_MUTAG.ipynb` | Size/degree distribution of non-identifiable MUTAG molecules; visualisation of WL coloring on representative examples |
-| `interesting_cases_analysis_NCI1.ipynb` | Breakdown of rejection reasons for NCI1; structural motifs common in non-identifiable anti-cancer compounds |
-| `interesting_cases_analysis_NCI109.ipynb` | Comparison of NCI109 rejection patterns vs NCI1; overlap between the two datasets |
-| `interesting_cases_analysis_ZINC20.ipynb` | Scale analysis of 16 M ZINC20 molecules; histogram of non-identifiable SMILES and their pharmacophore classes |
-
-```bash
-jupyter notebook notebooks/
-```
-
----
-
-## 8. Reproducibility
+## 7. Reproducibility
 
 The full results reported in the thesis (16,085,612 molecules) were produced with the following command sequence:
 
@@ -313,7 +294,7 @@ Results are written to `results/all_results.db` and `results/summary.csv` as the
 
 ---
 
-## 9. Package structure
+## 8. Package structure
 
 ```
 src/wl_identifiability/      # Core package — import from here
@@ -330,15 +311,13 @@ examples/
 
 scripts/
 ├── database/db.py           # SQLite schema and insert functions
-├── pipeline/run_pipeline.py # Alternative CLI with more options (--limit, --wl-steps)
-├── benchmarks/              # Flip graph benchmarks
-├── profiling/               # cProfile scripts
+├── examples/run_pipeline.py # Alternative CLI with more options (--limit, --wl-steps)
 └── download/                # Download and parsing scripts
 ```
 
 ---
 
-## 10. Tests
+## 9. Tests
 
 ```bash
 pixi run test
@@ -350,7 +329,7 @@ The suite covers WL coloring, graph construction, flip graph, skeleton, bouquet 
 
 ---
 
-## 11. Troubleshooting
+## 10. Troubleshooting
 
 **`ImportError: No module named 'wl_identifiability'`**
 The package is not installed. Run `pixi install` or `pip install -e .` from the project root.
@@ -380,7 +359,7 @@ Use `--workers N` where N matches your CPU count. For ZINC 250k, `--workers 4` i
 If you use this code or results in your work, please cite:
 
 ```bibtex
-@mastersthesis{mykytyshyn2026wl,
+@thesis{mykytyshyn2026wl,
   author  = {Yaryna Mykytyshyn},
   title   = {Is 1-WL Expressivity Sufficient for Molecular Graphs?},
   year    = {2026},

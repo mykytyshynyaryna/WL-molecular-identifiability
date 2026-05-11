@@ -237,7 +237,7 @@ def analyze_single_molecule(smiles: str, zinc_id: str, fixed_wl_steps: int) -> d
     def _run_bouquet(flip_graph, labels, mode_tag):
         try:
             return analyze_bouquet_forest_structure(
-                flip_graph, labels=labels, method="optimized"
+                flip_graph, labels=labels
             )
         except Exception as error:
             print(
