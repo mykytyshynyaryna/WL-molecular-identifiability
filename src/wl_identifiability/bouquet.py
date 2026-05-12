@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from ._imports import Hashable, nx
+from collections.abc import Hashable
+from typing import Any
 
-from .wl import compute_wl_coloring
+import networkx as nx
 
 
-
-def _find_unique_induced_c5_cycle(G: nx.Graph) -> list | None:
+def _find_unique_induced_c5_cycle(G: nx.Graph) -> list[Any] | None:
     """Return the unique induced C5 node list via cycle_basis, or None if no such cycle exists."""
     cycles = nx.cycle_basis(G)
     if len(cycles) != 1:
@@ -23,9 +23,9 @@ def _find_unique_induced_c5_cycle(G: nx.Graph) -> list | None:
     return list(cyc)
 
 
-def _extract_cycle_edges(G: nx.Graph, cycle_nodes: list) -> list[tuple]:
+def _extract_cycle_edges(G: nx.Graph, cycle_nodes: list[Any]) -> list[tuple[Any, Any]]:
     """Return all edges of G whose both endpoints are in cycle_nodes."""
-    edges = []
+    edges: list[tuple[Any, Any]] = []
     for u in cycle_nodes:
         for v in cycle_nodes:
             if u >= v:
@@ -35,17 +35,15 @@ def _extract_cycle_edges(G: nx.Graph, cycle_nodes: list) -> list[tuple]:
     return edges
 
 
-def _build_graph_without_edges(G: nx.Graph, edges: list[tuple]) -> nx.Graph:
+def _build_graph_without_edges(G: nx.Graph, edges: list[tuple[Any, Any]]) -> nx.Graph:
     """Return a new graph with the same nodes/attributes as G, minus the given edges."""
     excluded = {(min(u, v), max(u, v)) for u, v in edges}
     H = nx.create_empty_copy(G)
-    H.add_edges_from(
-        (u, v, d) for u, v, d in G.edges(data=True)
-        if (min(u, v), max(u, v)) not in excluded
-    )
+    H.add_edges_from((u, v, d) for u, v, d in G.edges(data=True) if (min(u, v), max(u, v)) not in excluded)
     return H
 
-def _compute_canonical_cycle_order(G: nx.Graph, cycle_nodes: list) -> list:
+
+def _compute_canonical_cycle_order(G: nx.Graph, cycle_nodes: list[Any]) -> list[Any]:
     """Return cycle_nodes in a canonical traversal order (smallest node first, lexicographically earlier direction)."""
     n = len(cycle_nodes)
     C = set(cycle_nodes)
@@ -56,8 +54,8 @@ def _compute_canonical_cycle_order(G: nx.Graph, cycle_nodes: list) -> list:
     if len(nbrs) != 2:
         return sorted(cycle_nodes)
 
-    def _build_order(start_next: object) -> list | None:
-        order = [a, start_next]
+    def _build_order(start_next: object) -> list[Any] | None:
+        order: list[Any] = [a, start_next]
         while len(order) < n:
             prev, cur = order[-2], order[-1]
             nxts = [x for x in H.neighbors(cur) if x != prev]
@@ -72,6 +70,7 @@ def _compute_canonical_cycle_order(G: nx.Graph, cycle_nodes: list) -> list:
         return valid[0] if tuple(valid[0]) <= tuple(valid[1]) else valid[1]
     return valid[0] if valid else sorted(cycle_nodes)
 
+
 def _is_valid_tree_structure(G: nx.Graph) -> bool:
     """Return True if G is a connected tree."""
     if G.is_directed():
@@ -81,10 +80,12 @@ def _is_valid_tree_structure(G: nx.Graph) -> bool:
         return False
     if G.number_of_edges() != n - 1:
         return False
-    return nx.is_connected(G)
+    return bool(nx.is_connected(G))
 
 
-def _split_bouquet_component_into_petals(G: nx.Graph):
+def _split_bouquet_component_into_petals(
+    G: nx.Graph,
+) -> tuple[bool, list[Any] | None, dict[Any, nx.Graph] | None]:
     """
     Split G into a canonical C₅ order and five rooted petal subgraphs.
 
@@ -104,7 +105,7 @@ def _split_bouquet_component_into_petals(G: nx.Graph):
     cycle_edges = _extract_cycle_edges(G, cyc_ord)
     H = _build_graph_without_edges(G, cycle_edges)
 
-    petals = {}
+    petals: dict[Any, nx.Graph] = {}
     for comp_nodes in nx.connected_components(H):
         comp = set(comp_nodes)
         inter = list(comp.intersection(C))
@@ -122,7 +123,7 @@ def _split_bouquet_component_into_petals(G: nx.Graph):
     return True, cyc_ord, petals
 
 
-def _are_all_petals_isomorphic(petals: dict, labels: dict | None = None) -> bool:
+def _are_all_petals_isomorphic(petals: dict[Any, Any], labels: dict[Any, Any] | None = None) -> bool:
     """
     Return True iff all five petal trees are mutually isomorphic (Definition 9, Kiefer).
 
@@ -141,9 +142,7 @@ def _are_all_petals_isomorphic(petals: dict, labels: dict | None = None) -> bool
     return len(set(sigs)) == 1
 
 
-
-
-def _sig_from_bouquet_result(result: dict) -> str | None:
+def _sig_from_bouquet_result(result: dict[str, Any]) -> str | None:
     """
     Extract the canonical AHU petal signature from an already-validated bouquet result dict.
 
@@ -154,7 +153,7 @@ def _sig_from_bouquet_result(result: dict) -> str | None:
     return tree_sigs[0] if tree_sigs else None
 
 
-def _compute_bouquet_signature(G: nx.Graph, labels: dict | None = None) -> str | None:
+def _compute_bouquet_signature(G: nx.Graph, labels: dict[Any, Any] | None = None) -> str | None:
     """
     Return a canonical AHU isomorphism certificate for bouquet G, or None if G is not a bouquet.
 
@@ -168,7 +167,7 @@ def _compute_bouquet_signature(G: nx.Graph, labels: dict | None = None) -> str |
     return _sig_from_bouquet_result(result)
 
 
-def _not_bouquet_result(method: str, reason: str) -> dict:
+def _not_bouquet_result(method: str, reason: str) -> dict[str, Any]:
     """Return a structured negative-result dict with all fields set to None."""
     return {
         "is_bouquet": False,
@@ -181,7 +180,7 @@ def _not_bouquet_result(method: str, reason: str) -> dict:
     }
 
 
-def _add_root_marker(T: nx.Graph, root: Hashable, labels: dict | None) -> nx.Graph:
+def _add_root_marker(T: nx.Graph, root: Hashable, labels: dict[Any, Any] | None) -> nx.Graph:
     """Return a copy of T with ``__is_root`` and (if labels given) ``__color`` node attributes."""
     H = T.copy()
     for v in H.nodes():
@@ -191,7 +190,7 @@ def _add_root_marker(T: nx.Graph, root: Hashable, labels: dict | None) -> nx.Gra
     return H
 
 
-def _extract_petals(G: nx.Graph, cyc_ord: list) -> tuple[bool, dict | None]:
+def _extract_petals(G: nx.Graph, cyc_ord: list[Any]) -> tuple[bool, dict[Any, nx.Graph] | None]:
     """
     Remove cycle edges from G and return five rooted petal subgraphs keyed by root.
 
@@ -220,16 +219,15 @@ def _extract_petals(G: nx.Graph, cyc_ord: list) -> tuple[bool, dict | None]:
     return True, petals
 
 
-
-
-def rooted_tree_signature(T: nx.Graph, root: Hashable) -> tuple:
+def rooted_tree_signature(T: nx.Graph, root: Hashable) -> tuple[Any, ...]:
     """
     Return an exact canonical nested-tuple signature for rooted tree (T, root).
 
     Two rooted trees are isomorphic iff their signatures are equal; no WL
     approximation is involved.
     """
-    def _sig(v: Hashable, parent: Hashable | None) -> tuple:
+
+    def _sig(v: Hashable, parent: Hashable | None) -> tuple[Any, ...]:
         return tuple(sorted(_sig(c, v) for c in T.neighbors(v) if c != parent))
 
     return _sig(root, None)
@@ -244,11 +242,11 @@ def _compute_tree_wl_signature(T: nx.Graph) -> str:
     if T.number_of_nodes() == 0:
         return "()"
     # Find centroid(s) by repeated leaf removal
-    remaining = set(T.nodes())
-    degree = {v: T.degree(v) for v in remaining}
-    leaves = {v for v in remaining if degree[v] <= 1}
+    remaining: set[Any] = set(T.nodes())
+    degree: dict[Any, int] = {v: T.degree(v) for v in remaining}
+    leaves: set[Any] = {v for v in remaining if degree[v] <= 1}
     while len(remaining) > 2:
-        next_leaves: set = set()
+        next_leaves: set[Any] = set()
         for leaf in leaves:
             remaining.discard(leaf)
             for nb in T.neighbors(leaf):
@@ -262,21 +260,21 @@ def _compute_tree_wl_signature(T: nx.Graph) -> str:
     return "|".join(sigs)
 
 
-def _rooted_colored_signature(T: nx.Graph, root: Hashable, labels: dict) -> tuple:
+def _rooted_colored_signature(T: nx.Graph, root: Hashable, labels: dict[Any, Any]) -> tuple[Any, ...]:
     """Return a canonical AHU signature for a rooted tree with per-node colors from labels."""
-    def _sig(v: Hashable, parent: Hashable | None) -> tuple:
-        color = labels.get(v, None)
+
+    def _sig(v: Hashable, parent: Hashable | None) -> tuple[Any, ...]:
+        color = labels.get(v)
         return (color, tuple(sorted(_sig(c, v) for c in T.neighbors(v) if c != parent)))
 
     return _sig(root, None)
 
 
-
-def _find_c5_nodes_adj(adj: dict) -> list | None:
+def _find_c5_nodes_adj(adj: dict[Any, Any]) -> list[Any] | None:
     """Leaf-stripping C₅ finder on a plain adjacency dict — no NX view overhead."""
-    degree = {v: len(nbs) for v, nbs in adj.items()}
-    queue = [v for v, d in degree.items() if d == 1]
-    removed: set = set()
+    degree: dict[Any, int] = {v: len(nbs) for v, nbs in adj.items()}
+    queue: list[Any] = [v for v, d in degree.items() if d == 1]
+    removed: set[Any] = set()
     while queue:
         v = queue.pop()
         removed.add(v)
@@ -293,7 +291,7 @@ def _find_c5_nodes_adj(adj: dict) -> list | None:
     return cycle_nodes
 
 
-def _canonical_cycle_order_adj(adj: dict, cycle_nodes: list) -> list:
+def _canonical_cycle_order_adj(adj: dict[Any, Any], cycle_nodes: list[Any]) -> list[Any]:
     """Canonical C₅ traversal order using plain adjacency dict (no subgraph view)."""
     C = set(cycle_nodes)
     a = min(cycle_nodes)
@@ -301,8 +299,8 @@ def _canonical_cycle_order_adj(adj: dict, cycle_nodes: list) -> list:
     if len(nbrs) != 2:
         return sorted(cycle_nodes)
 
-    def _build_order(start_next: object) -> list | None:
-        order = [a, start_next]
+    def _build_order(start_next: object) -> list[Any] | None:
+        order: list[Any] = [a, start_next]
         while len(order) < 5:
             prev, cur = order[-2], order[-1]
             nxts = [x for x in adj[cur] if x != prev and x in C]
@@ -319,26 +317,21 @@ def _canonical_cycle_order_adj(adj: dict, cycle_nodes: list) -> list:
 
 
 def _petal_signatures_adj(
-    adj: dict,
-    cycle_nodes: list,
-    labels: dict | None,
-) -> tuple[bool, list | None]:
+    adj: dict[Any, Any],
+    cycle_nodes: list[Any],
+    labels: dict[Any, Any] | None,
+) -> tuple[bool, list[Any] | None]:
     """BFS petal discovery and AHU signatures on a plain adjacency dict."""
-    C: set = set(cycle_nodes)
-    cycle_edge_set: set = {
-        (min(u, v), max(u, v))
-        for u in C
-        for v in adj[u]
-        if v in C
-    }
+    C: set[Any] = set(cycle_nodes)
+    cycle_edge_set: set[tuple[Any, Any]] = {(min(u, v), max(u, v)) for u in C for v in adj[u] if v in C}
 
-    visited: set = set()
-    comps: list = []
+    visited: set[Any] = set()
+    comps: list[list[Any]] = []
     for start in adj:
         if start in visited:
             continue
-        comp: list = []
-        queue = [start]
+        comp: list[Any] = []
+        queue: list[Any] = [start]
         visited.add(start)
         qi = 0
         while qi < len(queue):
@@ -354,7 +347,7 @@ def _petal_signatures_adj(
     if len(comps) != 5:
         return False, None
 
-    petal_pairs: list = []
+    petal_pairs: list[tuple[Any, set[Any]]] = []
     for comp in comps:
         roots = [n for n in comp if n in C]
         if len(roots) != 1:
@@ -362,26 +355,27 @@ def _petal_signatures_adj(
         petal_pairs.append((roots[0], set(comp)))
 
     if labels is not None:
-        def _sig(v: Hashable, parent: Hashable | None, pset: set) -> tuple:
+
+        def _sig(v: Hashable, parent: Hashable | None, pset: set[Any]) -> tuple[Any, ...]:
             color = labels.get(v, None)
-            return (color, tuple(sorted(
-                _sig(c, v, pset) for c in adj[v] if c != parent and c in pset
-            )))
+            return (
+                color,
+                tuple(sorted(_sig(c, v, pset) for c in adj[v] if c != parent and c in pset)),
+            )
     else:
-        def _sig(v: Hashable, parent: Hashable | None, pset: set) -> tuple:
-            return tuple(sorted(
-                _sig(c, v, pset) for c in adj[v] if c != parent and c in pset
-            ))
+
+        def _sig(v: Hashable, parent: Hashable | None, pset: set[Any]) -> tuple[Any, ...]:
+            return tuple(sorted(_sig(c, v, pset) for c in adj[v] if c != parent and c in pset))
 
     return True, [str(_sig(r, None, ns)) for r, ns in petal_pairs]
 
 
 def _check_bouquet_adj(
-    adj: dict,
+    adj: dict[Any, Any],
     n: int,
     m: int,
-    labels: dict | None,
-) -> dict:
+    labels: dict[Any, Any] | None,
+) -> dict[str, Any]:
     """Core bouquet check on a plain adjacency dict with pre-computed n and m."""
     method = "optimize"
     if m == n - 1:
@@ -394,7 +388,7 @@ def _check_bouquet_adj(
         return _not_bouquet_result(method, "no_unique_induced_c5")
 
     ok, str_sigs = _petal_signatures_adj(adj, cyc, labels)
-    if not ok:
+    if not ok or str_sigs is None:
         return _not_bouquet_result(method, "invalid_petal_structure")
 
     if len(set(str_sigs)) != 1:
@@ -419,29 +413,26 @@ def _check_bouquet_adj(
     }
 
 
-
 def _check_bouquet_component(
     G: nx.Graph,
-    labels: dict | None = None,
-) -> dict:
+    labels: dict[Any, Any] | None = None,
+) -> dict[str, Any]:
     """
     Fast bouquet checker using edge-count pre-filter, leaf-stripping, and AHU signatures.
 
     Materialises the adjacency dict once from G (avoiding repeated subgraph-view
     coreviews overhead), then delegates entirely to the pure-dict helpers.
     """
-    adj = {v: list(G.adj[v]) for v in G.nodes()}
+    adj: dict[Any, Any] = {v: list(G.adj[v]) for v in G.nodes()}
     n = len(adj)
     m = sum(len(nbs) for nbs in adj.values()) // 2
     return _check_bouquet_adj(adj, n, m, labels)
 
 
-
-
 def is_bouquet_component(
     G: nx.Graph,
-    labels: dict | None = None,
-) -> dict:
+    labels: dict[Any, Any] | None = None,
+) -> dict[str, Any]:
     """
     Check whether connected component G is a valid bouquet (Definition 9, Kiefer).
 
@@ -454,24 +445,23 @@ def is_bouquet_component(
     return _check_bouquet_component(G, labels=labels)
 
 
-
 _COMPONENT_REASON_MAP: dict[str, str] = {
-    "is_tree":                  "component_not_tree_or_bouquet",
-    "not_one_cycle_component":  "multiple_cycles_in_component",
-    "no_unique_induced_c5":     "cycle_not_5",
-    "invalid_petal_structure":  "invalid_petal_structure",
-    "petals_not_isomorphic":    "component_not_tree_nor_bouquet",
-    "not_connected":            "disconnected_invalid_structure",
-    "not_exactly_one_cycle":    "multiple_cycles_in_component",
-    "cycle_length_not_5":       "cycle_not_5",
-    "cycle_not_induced_c5":     "not_induced_c5",
+    "is_tree": "component_not_tree_or_bouquet",
+    "not_one_cycle_component": "multiple_cycles_in_component",
+    "no_unique_induced_c5": "cycle_not_5",
+    "invalid_petal_structure": "invalid_petal_structure",
+    "petals_not_isomorphic": "component_not_tree_nor_bouquet",
+    "not_connected": "disconnected_invalid_structure",
+    "not_exactly_one_cycle": "multiple_cycles_in_component",
+    "cycle_length_not_5": "cycle_not_5",
+    "cycle_not_induced_c5": "not_induced_c5",
 }
 
 
 def analyze_bouquet_forest_structure(
     F: nx.Graph,
-    labels: dict | None = None,
-) -> dict:
+    labels: dict[Any, Any] | None = None,
+) -> dict[str, Any]:
     """
     Test whether flip graph F is a bouquet forest (Theorem 17, Kiefer).
 
@@ -515,15 +505,13 @@ def analyze_bouquet_forest_structure(
         if m_comp == n_comp - 1:
             continue
 
-        adj = {v: list(F[v]) for v in comp_nodes}
+        adj: dict[Any, Any] = {v: list(F[v]) for v in comp_nodes}
         result = _check_bouquet_adj(adj, n_comp, m_comp, labels)
 
         if not result["is_bouquet"]:
             if invalid_reason is None:
                 internal = result.get("reason", "unknown_error")
-                invalid_reason = _COMPONENT_REASON_MAP.get(
-                    internal, "component_not_tree_or_bouquet"
-                )
+                invalid_reason = _COMPONENT_REASON_MAP.get(internal, "component_not_tree_or_bouquet")
             continue
 
         sig = _sig_from_bouquet_result(result)
@@ -544,7 +532,7 @@ def analyze_bouquet_forest_structure(
             "reason": invalid_reason,
         }
 
-    seen: set = set()
+    seen: set[str] = set()
     non_identifiable = False
     for s in bouquets:
         if s in seen:
@@ -572,8 +560,8 @@ def analyze_bouquet_forest_structure(
 
 def check_bouquet_component(
     G: nx.Graph,
-    labels: dict | None = None,
-) -> tuple[bool, dict | None]:
+    labels: dict[Any, Any] | None = None,
+) -> tuple[bool, dict[str, Any] | None]:
     """
     Legacy public API — prefer ``is_bouquet_component`` for new code.
 
@@ -584,12 +572,10 @@ def check_bouquet_component(
         return False, None
 
     ok, cycle, petals = _split_bouquet_component_into_petals(G)
-    if not ok:
+    if not ok or petals is None:
         return False, None
 
     if not _are_all_petals_isomorphic(petals, labels=labels):
         return False, None
 
     return True, {"cycle": cycle, "petals": petals, "isomorphic_petals": True}
-
-

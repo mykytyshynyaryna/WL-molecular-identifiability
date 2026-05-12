@@ -1,27 +1,32 @@
 from __future__ import annotations
 
-from ._imports import defaultdict, Hashable, nx, plt
+from collections import defaultdict
+from collections.abc import Hashable
+from typing import Any
+
+import matplotlib.pyplot as plt
+import networkx as nx
 
 from .wl import (
+    compute_label_histogram,
     compute_wl_coloring,
     compute_wl_stabilization_steps,
     normalize_node_labels,
-    compute_label_histogram,
 )
 
 
 def _group_nodes_by_label(
     G: nx.Graph,
-    labels,
+    labels: Any,
 ) -> dict[Hashable, list[Hashable]]:
     """Return a dict mapping each label to the sorted list of nodes carrying that label."""
     labels = normalize_node_labels(G, labels)
 
-    classes = defaultdict(list)
+    classes: dict[Any, list[Any]] = defaultdict(list)
     for v in G.nodes():
         classes[labels[v]].append(v)
 
-    grouped = {}
+    grouped: dict[Hashable, list[Hashable]] = {}
     for lab, nodes in classes.items():
         grouped[lab] = sorted(nodes, key=lambda x: repr(x))
 
@@ -53,17 +58,17 @@ def _map_labels_to_colors(
 
 def draw_graph_wl_coloring(
     G: nx.Graph,
-    labels,
+    labels: Any,
     *,
     layout: str = "spring",
     seed: int = 42,
     title: str | None = None,
     show_node_ids: bool = True,
     show_wl_labels: bool = False,
-    pos: dict | None = None,
+    pos: dict[Any, Any] | None = None,
     node_size: int = 700,
     font_size: int = 9,
-) -> tuple[dict, dict[Hashable, int]]:
+) -> tuple[dict[Any, Any], dict[Hashable, int]]:
     """
     Draw a graph with nodes colored by their WL labels.
     """
@@ -120,7 +125,7 @@ def inspect_wl_behavior(
     fixed_wl_steps: int | None = None,
     atom_attr: str = "atomic_num",
     draw: bool = True,
-) -> dict:
+) -> dict[str, Any]:
     """
     Diagnostic helper for comparing topological WL vs atom-aware WL.
     """
@@ -152,7 +157,7 @@ def inspect_wl_behavior(
     top_classes = _group_nodes_by_label(G, wl_top)
     atom_classes = _group_nodes_by_label(G, wl_atom)
 
-    result = {
+    result: dict[str, Any] = {
         "fixed_wl_steps": fixed_wl_steps,
         "stabilization_top": compute_wl_stabilization_steps(G, label_attr=None),
         "stabilization_atom": compute_wl_stabilization_steps(G, label_attr=atom_attr),
@@ -162,14 +167,10 @@ def inspect_wl_behavior(
         },
         "atomic": {
             "summary": atom_hist,
-            "classes": {
-                k: atom_classes[k] for k in _sort_color_class_keys(atom_classes)
-            },
+            "classes": {k: atom_classes[k] for k in _sort_color_class_keys(atom_classes)},
         },
         "color_ratio_atom_to_top": (
-            atom_hist["n_classes"] / top_hist["n_classes"]
-            if top_hist["n_classes"] > 0
-            else None
+            atom_hist["n_classes"] / top_hist["n_classes"] if top_hist["n_classes"] > 0 else None
         ),
     }
 

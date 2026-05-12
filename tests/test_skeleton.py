@@ -8,20 +8,17 @@ Covers:
 """
 
 import networkx as nx
-import pytest
 
 from wl_identifiability.skeleton import (
     REL_EMPTY,
-    REL_MATCHING,
     REL_FAN,
     REL_IRREGULAR,
-    classify_between_class_relation,
-    classify_within_class_structure,
+    REL_MATCHING,
     build_skeleton,
     check_lemma16_conditions,
+    classify_between_class_relation,
+    classify_within_class_structure,
 )
-
-
 
 
 class TestClassifyBetweenClassRelation:
@@ -34,24 +31,24 @@ class TestClassifyBetweenClassRelation:
         """No edges between classes → REL_EMPTY."""
         F = nx.Graph()
         F.add_nodes_from([0, 1, 2, 3])
-        rel, k, l = classify_between_class_relation(F, [0, 1], [2, 3])
+        rel, _k, _l_deg = classify_between_class_relation(F, [0, 1], [2, 3])
         assert rel == REL_EMPTY
-        assert k == 0 and l == 0
+        assert _k == 0 and _l_deg == 0
 
     def test_empty_isolated_nodes(self):
         """Explicit isolated node groups → REL_EMPTY."""
         F = nx.Graph()
         F.add_edges_from([(0, 1)])
-        rel, k, l = classify_between_class_relation(F, [0, 1], [2, 3])
+        rel, _k, _l_deg = classify_between_class_relation(F, [0, 1], [2, 3])
         assert rel == REL_EMPTY
 
     def test_perfect_matching(self):
         """One-to-one matching between classes → REL_MATCHING, k=l=1."""
         F = nx.Graph()
         F.add_edges_from([(0, 2), (1, 3)])
-        rel, k, l = classify_between_class_relation(F, [0, 1], [2, 3])
+        rel, k, l_deg = classify_between_class_relation(F, [0, 1], [2, 3])
         assert rel == REL_MATCHING
-        assert k == 1 and l == 1
+        assert k == 1 and l_deg == 1
 
     def test_fan_p_to_q(self):
         """P-vertices each have 2 neighbours in Q; Q-vertices each have 1 in P → P ≪ Q."""
@@ -59,9 +56,9 @@ class TestClassifyBetweenClassRelation:
         Q = [3, 4, 5, 6, 7, 8]
         F = nx.Graph()
         F.add_edges_from([(0, 3), (0, 4), (1, 5), (1, 6), (2, 7), (2, 8)])
-        rel, k, l = classify_between_class_relation(F, P, Q)
+        rel, k, l_deg = classify_between_class_relation(F, P, Q)
         assert rel == REL_FAN
-        assert k == 2 and l == 1
+        assert k == 2 and l_deg == 1
 
     def test_fan_q_to_p(self):
         """Q-vertices each have 2 neighbours in P; P-vertices each have 1 → P ≫ Q (Q ≪ P)."""
@@ -69,33 +66,31 @@ class TestClassifyBetweenClassRelation:
         Q = [6, 7, 8]
         F = nx.Graph()
         F.add_edges_from([(0, 6), (1, 6), (2, 7), (3, 7), (4, 8), (5, 8)])
-        rel, k, l = classify_between_class_relation(F, P, Q)
+        rel, k, l_deg = classify_between_class_relation(F, P, Q)
         assert rel == REL_FAN
-        assert k == 1 and l == 2
+        assert k == 1 and l_deg == 2
 
     def test_irregular_non_biregular(self):
         """Non-uniform degrees → REL_IRREGULAR."""
         F = nx.Graph()
         F.add_edges_from([(0, 2), (0, 3), (1, 4)])
-        rel, k, l = classify_between_class_relation(F, [0, 1], [2, 3, 4])
+        rel, k, l_deg = classify_between_class_relation(F, [0, 1], [2, 3, 4])
         assert rel == REL_IRREGULAR
-        assert k == -1 and l == -1
+        assert k == -1 and l_deg == -1
 
     def test_irregular_both_high_degree(self):
         """k=2, l=2 → does not match any Notation-15 case → REL_IRREGULAR."""
         F = nx.complete_bipartite_graph(2, 2)
         P = [0, 1]
         Q = [2, 3]
-        rel, k, l = classify_between_class_relation(F, P, Q)
+        rel, _k, _l_deg = classify_between_class_relation(F, P, Q)
         assert rel == REL_IRREGULAR
 
     def test_empty_classes(self):
         """Empty class lists → REL_EMPTY."""
         F = nx.Graph()
-        rel, k, l = classify_between_class_relation(F, [], [0, 1])
+        rel, _k, _l_deg = classify_between_class_relation(F, [], [0, 1])
         assert rel == REL_EMPTY
-
-
 
 
 class TestClassifyWithinClassStructure:
@@ -153,8 +148,6 @@ class TestClassifyWithinClassStructure:
         assert classify_within_class_structure(F, list(range(5))) == "cycle5"
 
 
-
-
 def _make_two_class_matching_flip() -> tuple[nx.Graph, dict]:
     """
     Flip graph: P=[0,1], Q=[2,3], perfect matching 0-2 and 1-3.
@@ -182,7 +175,7 @@ class TestBuildSkeleton:
     def test_two_classes_matching_has_arc_both_ways(self):
         """REL_MATCHING → two antiparallel arcs in the directed skeleton."""
         F, labels = _make_two_class_matching_flip()
-        S, relations, within = build_skeleton(F, labels)
+        S, _relations, _within = build_skeleton(F, labels)
         assert S.has_edge("A", "B")
         assert S.has_edge("B", "A")
         assert S["A"]["B"]["relation"] == REL_MATCHING
@@ -191,9 +184,9 @@ class TestBuildSkeleton:
     def test_two_classes_matching_relation_stored(self):
         F, labels = _make_two_class_matching_flip()
         _, relations, _ = build_skeleton(F, labels)
-        rel, k, l = relations[("A", "B")]
+        rel, k, l_deg = relations[("A", "B")]
         assert rel == REL_MATCHING
-        assert k == 1 and l == 1
+        assert k == 1 and l_deg == 1
 
     def test_two_classes_empty_within_structures(self):
         """No within-class edges → both classes report 'empty'."""
@@ -237,7 +230,7 @@ class TestBuildSkeleton:
     def test_within_class_cycle5_detected(self):
         """A class with a C5 internal structure is classified as 'cycle5'."""
         F = nx.cycle_graph(5)
-        labels = {v: "A" for v in range(5)}
+        labels = dict.fromkeys(range(5), "A")
         _, _, within = build_skeleton(F, labels)
         assert within["A"] == "cycle5"
 
@@ -245,11 +238,9 @@ class TestBuildSkeleton:
         F = nx.Graph()
         F.add_nodes_from([0, 1, 2, 3, 4, 5])
         labels = {0: "A", 1: "A", 2: "B", 3: "B", 4: "C", 5: "C"}
-        S, relations, _ = build_skeleton(F, labels)
+        S, _relations, _ = build_skeleton(F, labels)
         assert S.number_of_edges() == 0
         assert S.number_of_nodes() == 3
-
-
 
 
 def _skeleton_from_edges(
@@ -279,8 +270,6 @@ def _skeleton_from_edges(
 
 
 class TestCheckLemma16Conditions:
-
-
     def test_empty_skeleton_all_satisfied(self):
         """No edges, no exceptions → all conditions trivially hold."""
         S = nx.DiGraph()
@@ -310,7 +299,6 @@ class TestCheckLemma16Conditions:
         )
         result = check_lemma16_conditions(S, within)
         assert result["all_satisfied"] is True
-
 
     def test_condition1_opposing_fans_on_path(self):
         """
@@ -346,7 +334,6 @@ class TestCheckLemma16Conditions:
         )
         result = check_lemma16_conditions(S, within)
         assert result["condition1_satisfied"] is True
-
 
     def test_condition2_fan_reaches_cycle5(self):
         """
@@ -400,7 +387,6 @@ class TestCheckLemma16Conditions:
         result = check_lemma16_conditions(S, within)
         assert result["condition2_satisfied"] is True
 
-
     def test_condition3_two_exceptions_in_component(self):
         """
         Two cycle5 classes X and Y connected by a matching arc.
@@ -445,7 +431,6 @@ class TestCheckLemma16Conditions:
         result = check_lemma16_conditions(S, within)
         assert result["condition3_satisfied"] is False
 
-
     def test_non_forest_flagged(self):
         """A skeleton with a cycle is not a forest — this is reported."""
         S = nx.DiGraph()
@@ -471,7 +456,6 @@ class TestCheckLemma16Conditions:
         result = check_lemma16_conditions(S, within)
         assert result["skeleton_is_forest"] is True
 
-
     def test_flip_with_fan_and_exception_violates_condition2(self):
         """
         Construct a flip graph where class A fans into class B,
@@ -489,8 +473,8 @@ class TestCheckLemma16Conditions:
         for i in range(5):
             F.add_edge(B_cycle[i], B_cycle[(i + 1) % 5])
 
-        labels = {v: "A" for v in A_nodes}
-        labels.update({v: "B" for v in B_nodes})
+        labels = dict.fromkeys(A_nodes, "A")
+        labels.update(dict.fromkeys(B_nodes, "B"))
 
         S, _, within = build_skeleton(F, labels)
         result = check_lemma16_conditions(S, within)

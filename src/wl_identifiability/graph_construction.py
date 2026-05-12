@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from ._imports import np, nx, Chem
+import networkx as nx
+import numpy as np
+from rdkit import Chem
 
 
 def convert_rdkit_molecule_to_nx_graph(mol: Chem.Mol) -> nx.Graph:

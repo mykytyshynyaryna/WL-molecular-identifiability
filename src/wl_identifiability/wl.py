@@ -1,11 +1,15 @@
 from __future__ import annotations
 
-from ._imports import Counter, Hashable, Iterable, nx
+from collections import Counter
+from collections.abc import Hashable, Iterable
+from typing import Any
+
+import networkx as nx
 
 LabelSource = str | Iterable[str] | None
 
 
-def _normalize_label_value(x):
+def _normalize_label_value(x: object) -> Any:
     """Convert an arbitrary node-attribute value to a hashable, comparable form."""
     if x is None:
         return "__NONE__"
@@ -22,7 +26,7 @@ def _normalize_label_value(x):
     return repr(x)
 
 
-def _resolve_label_attribute(label_attr):
+def _resolve_label_attribute(label_attr: LabelSource) -> str | list[str] | None:
     """Normalise label_attr to None, a single string, or a list of strings."""
     if label_attr is None:
         return None
@@ -36,12 +40,15 @@ def _resolve_label_attribute(label_attr):
 
 
 def _initialize_node_labels(
-    G, label_attr=None, missing="__MISSING__", default="__UNLABELED__"
-):
+    G: nx.Graph,
+    label_attr: LabelSource = None,
+    missing: str = "__MISSING__",
+    default: str = "__UNLABELED__",
+) -> dict[Hashable, int]:
     """Read node attributes from G and map them to compact integer labels at iteration 0."""
     label_attr = _resolve_label_attribute(label_attr)
 
-    raw = {}
+    raw: dict[Any, Any] = {}
     for v in G.nodes:
         if label_attr is None:
             raw[v] = default
@@ -53,25 +60,29 @@ def _initialize_node_labels(
         raw[v] = _normalize_label_value(raw[v])
 
     uniq = sorted(set(raw.values()), key=lambda z: repr(z))
-    mp = {val: i for i, val in enumerate(uniq)}
+    mp: dict[Any, int] = {val: i for i, val in enumerate(uniq)}
     return {v: mp[raw[v]] for v in G.nodes}
 
 
-def _refine_wl_labels_once(G, labels):
+def _refine_wl_labels_once(G: nx.Graph, labels: dict[Hashable, int]) -> dict[Hashable, int]:
     """Perform one WL refinement step: hash each node's label together with its sorted neighbour labels."""
-    sig = {}
+    sig: dict[Any, tuple[int, tuple[int, ...]]] = {}
     for v in G.nodes:
         neigh = sorted(labels[u] for u in G.neighbors(v))
         sig[v] = (labels[v], tuple(neigh))
 
     uniq = sorted(set(sig.values()), key=lambda z: repr(z))
-    mp = {val: i for i, val in enumerate(uniq)}
+    mp: dict[Any, int] = {val: i for i, val in enumerate(uniq)}
     return {v: mp[sig[v]] for v in G.nodes}
 
 
 def compute_wl_coloring(
-    G, label_attr=None, max_iter=None, store_history=True, mode="bounded"
-):
+    G: nx.Graph,
+    label_attr: LabelSource = None,
+    max_iter: int | None = None,
+    store_history: bool = True,
+    mode: str = "bounded",
+) -> dict[str, Any]:
     """
     Compute Weisfeiler-Lehman node coloring for the given graph.
     """
@@ -80,7 +91,7 @@ def compute_wl_coloring(
             "converged": True,
             "converge_iter": 0,
             "labels": {},
-            "history": [] if store_history else [],
+            "history": [],
             "iterations": 0,
             "iter_cap": 0,
         }
@@ -98,14 +109,14 @@ def compute_wl_coloring(
     else:
         raise ValueError(f"Unknown mode: {mode}")
 
-    labels = _initialize_node_labels(G, label_attr=label_attr)
+    labels: dict[Hashable, int] = _initialize_node_labels(G, label_attr=label_attr)
 
-    history = [] if store_history else None
+    history: list[dict[Hashable, int]] = []
     if store_history:
         history.append(labels.copy())
 
     converged = False
-    converge_iter = None
+    converge_iter: int | None = None
     iterations = 0
 
     for t in range(1, iter_cap + 1):
@@ -115,9 +126,7 @@ def compute_wl_coloring(
         if store_history:
             history.append(new_labels.copy())
 
-        if (not converged) and (
-            len(set(new_labels.values())) == len(set(labels.values()))
-        ):
+        if (not converged) and (len(set(new_labels.values())) == len(set(labels.values()))):
             converged = True
             converge_iter = t
             if stop_on_converge:
@@ -130,7 +139,7 @@ def compute_wl_coloring(
         "converged": converged,
         "converge_iter": converge_iter,
         "labels": labels,
-        "history": history if store_history else [],
+        "history": history,
         "iterations": iterations,
         "iter_cap": iter_cap,
     }
@@ -153,19 +162,17 @@ def compute_fixed_wl_steps_from_topology(G: nx.Graph, cap: int | None = None) ->
     return int(K)
 
 
-def compute_wl_with_fixed_steps(G: nx.Graph, K: int, label_attr=None):
+def compute_wl_with_fixed_steps(G: nx.Graph, K: int, label_attr: LabelSource = None) -> dict[str, Any]:
     """
     Run WL coloring for a fixed number of iterations.
     """
-    return compute_wl_coloring(
-        G, label_attr=label_attr, mode="fixed", max_iter=K, store_history=False
-    )
+    return compute_wl_coloring(G, label_attr=label_attr, mode="fixed", max_iter=K, store_history=False)
 
 
 def compute_wl_stabilization_steps(
     G: nx.Graph,
     *,
-    label_attr=None,
+    label_attr: LabelSource = None,
     cap: int | None = None,
 ) -> int:
     """
@@ -179,12 +186,12 @@ def compute_wl_stabilization_steps(
         store_history=False,
         mode="until_converge",
     )
-    return out["converge_iter"] if out["converged"] else out["iterations"]
+    return int(out["converge_iter"]) if out["converged"] else int(out["iterations"])
 
 
 def normalize_node_labels(
     G: nx.Graph,
-    labels,
+    labels: Any,
 ) -> dict[Hashable, Hashable]:
     """Normalise labels input: accepts a plain dict, a WL result dict, or a history list."""
     if isinstance(labels, dict):
@@ -220,10 +227,10 @@ def normalize_node_labels(
 
 def compute_label_histogram(
     G: nx.Graph,
-    labels,
+    labels: Any,
     *,
     sort_by: str = "size_desc",
-) -> dict:
+) -> dict[str, Any]:
     """
     Compute a summary of WL color classes.
     """

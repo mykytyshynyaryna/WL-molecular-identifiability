@@ -1,6 +1,6 @@
 # Dataset Download Scripts
 
-All scripts live in `scripts/download/`.  
+All scripts live in `scripts/download/download_data/`.  
 Run them from the **project root** directory.
 
 ---
@@ -8,10 +8,10 @@ Run them from the **project root** directory.
 ## Quick start — download everything
 
 ```bash
-python scripts/download/download_all.py
+python scripts/download/download_data/download_all.py
 ```
 
-Downloads all six datasets in sequence and prints a summary at the end.
+Downloads all four datasets (MUTAG, NCI1, NCI109, ZINC) in sequence and prints a summary at the end.
 
 ---
 
@@ -22,23 +22,19 @@ Downloads all six datasets in sequence and prints a summary at the end.
 | `download_mutag.py` | MUTAG | TU Dortmund | TU plain-text (ZIP) |
 | `download_nci1.py` | NCI1 | TU Dortmund | TU plain-text (ZIP) |
 | `download_nci109.py` | NCI109 | TU Dortmund | TU plain-text (ZIP) |
-| `download_dd.py` | D&D (DD) | TU Dortmund | TU plain-text (ZIP) |
-| `download_enzymes.py` | ENZYMES | TU Dortmund | TU plain-text (ZIP) |
 | `download_zinc.py` | ZINC 250k | chemical_vae / GitHub | `.smi` |
 | `download_zinc_from_uri.py` | ZINC (custom tranche) | ZINC15 URI list | `.smi` |
 
 Run any single script directly:
 
 ```bash
-python scripts/download/download_mutag.py
-python scripts/download/download_nci1.py
-python scripts/download/download_nci109.py
-python scripts/download/download_dd.py
-python scripts/download/download_enzymes.py
-python scripts/download/download_zinc.py
+python scripts/download/download_data/download_mutag.py
+python scripts/download/download_data/download_nci1.py
+python scripts/download/download_data/download_nci109.py
+python scripts/download/download_data/download_zinc.py
 
 # Tranche downloader (requires a local .uri file from ZINC15)
-python scripts/download/download_zinc_from_uri.py --uri path/to/file.uri
+python scripts/download/download_data/download_zinc_from_uri.py --uri path/to/file.uri
 ```
 
 ---
@@ -63,13 +59,6 @@ data/raw/
 ├── NCI109/
 │   ├── NCI109.zip
 │   └── NCI109/
-├── DD/
-│   ├── DD.zip
-│   └── DD/
-├── ENZYMES/
-│   ├── ENZYMES.zip
-│   └── ENZYMES/
-│       └── ...  (includes ENZYMES_node_attributes.txt)
 └── ZINC/
     └── zinc250k.smi   ← one SMILES per line
 ```
@@ -78,7 +67,7 @@ data/raw/
 
 ## Dataset notes
 
-### TU Dortmund format (MUTAG / NCI1 / NCI109 / DD / ENZYMES)
+### TU Dortmund format (MUTAG / NCI1 / NCI109)
 
 The TU Dortmund benchmark collection distributes graph datasets as plain-text
 files.  Key files:

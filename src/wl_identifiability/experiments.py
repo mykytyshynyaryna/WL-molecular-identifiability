@@ -2,17 +2,21 @@ from __future__ import annotations
 
 import sys
 from multiprocessing import Pool
+from typing import Any
 
-from ._imports import np, pl, Chem
+import networkx as nx
+import numpy as np
+import polars as pl
+from rdkit import Chem
 
-from .graph_construction import convert_rdkit_molecule_to_nx_graph
-from .wl import compute_fixed_wl_steps_from_topology, compute_wl_with_fixed_steps
-from .flip_graph import build_flip_graph_from_labels
 from .bouquet import analyze_bouquet_forest_structure
-from .skeleton import build_skeleton, check_lemma16_conditions, REL_IRREGULAR
+from .flip_graph import build_flip_graph_from_labels
+from .graph_construction import convert_rdkit_molecule_to_nx_graph
+from .skeleton import REL_IRREGULAR, build_skeleton, check_lemma16_conditions
+from .wl import compute_fixed_wl_steps_from_topology, compute_wl_with_fixed_steps
 
 
-def estimate_global_wl_steps(graphs, cap=50):
+def estimate_global_wl_steps(graphs: list[nx.Graph], cap: int = 50) -> dict[str, Any]:
     """
     Estimate a global number of WL iterations across a dataset.
     """
@@ -35,9 +39,9 @@ def estimate_global_wl_steps(graphs, cap=50):
 def _collect_sample_graphs_for_k_estimation(
     df: pl.DataFrame,
     sample_size: int = 300,
-):
+) -> list[nx.Graph]:
     """Parse the first sample_size SMILES strings from df and return them as NetworkX graphs."""
-    sample_graphs = []
+    sample_graphs: list[nx.Graph] = []
 
     for smiles in df["smiles"][:sample_size].to_list():
         mol = Chem.MolFromSmiles(smiles)
@@ -54,16 +58,15 @@ def estimate_fixed_wl_steps_from_dataframe(
     df: pl.DataFrame,
     sample_size: int = 300,
     cap: int = 50,
-) -> dict:
+) -> dict[str, Any]:
     """
     Estimate a fixed number of WL iterations from a sample of molecular graphs.
     """
     sample_graphs = _collect_sample_graphs_for_k_estimation(df, sample_size=sample_size)
-    k_stats = estimate_global_wl_steps(sample_graphs, cap=cap)
-    return k_stats
+    return estimate_global_wl_steps(sample_graphs, cap=cap)
 
 
-def _compute_wl_summary(wl_result: dict, prefix: str) -> dict:
+def _compute_wl_summary(wl_result: dict[str, Any], prefix: str) -> dict[str, Any]:
     """Extract convergence, iteration count, and number of color classes from a WL result dict.
 
     Fields saved:
@@ -81,13 +84,13 @@ def _compute_wl_summary(wl_result: dict, prefix: str) -> dict:
 
     return {
         f"wl_converged_{prefix}": wl_result.get("converged"),
-        f"wl_iters_{prefix}":     wl_result.get("converge_iter"),
-        f"wl_budget_{prefix}":    wl_result.get("iterations"),
-        f"n_colors_{prefix}":     n_colors,
+        f"wl_iters_{prefix}": wl_result.get("converge_iter"),
+        f"wl_budget_{prefix}": wl_result.get("iterations"),
+        f"n_colors_{prefix}": n_colors,
     }
 
 
-def _compute_flip_graph_summary(flip_info: dict) -> dict:
+def _compute_flip_graph_summary(flip_info: dict[str, Any]) -> dict[str, Any]:
     """Flatten the flip_info counters into a flat dict suitable for a result row."""
     within_copy = flip_info.get("within_copy", 0) or 0
     within_flip = flip_info.get("within_flip", 0) or 0
@@ -103,7 +106,7 @@ def _compute_flip_graph_summary(flip_info: dict) -> dict:
     }
 
 
-def _compute_color_ratio(wl_top: dict, wl_atom: dict) -> float | None:
+def _compute_color_ratio(wl_top: dict[str, Any], wl_atom: dict[str, Any]) -> float | None:
     """Return the ratio of atom-aware color classes to topological color classes, or None if undefined."""
     top_labels = wl_top.get("labels", {})
     atom_labels = wl_atom.get("labels", {})
@@ -117,7 +120,10 @@ def _compute_color_ratio(wl_top: dict, wl_atom: dict) -> float | None:
     return n_atom / n_top
 
 
-def _compute_skeleton_summary(class_relations: dict, within_class_structures: dict) -> dict:
+def _compute_skeleton_summary(
+    class_relations: dict[Any, Any],
+    within_class_structures: dict[Any, str],
+) -> dict[str, Any]:
     """
     Summarise the skeleton for the result dict.
 
@@ -125,12 +131,8 @@ def _compute_skeleton_summary(class_relations: dict, within_class_structures: di
     Lemma 14 violations (irregular between-class relations) so the caller
     can quickly identify theory violations without parsing the full skeleton.
     """
-    n_within_other = sum(
-        1 for s in within_class_structures.values() if s == "other"
-    )
-    n_irregular = sum(
-        1 for rel, _k, _l in class_relations.values() if rel == REL_IRREGULAR
-    )
+    n_within_other = sum(1 for s in within_class_structures.values() if s == "other")
+    n_irregular = sum(1 for rel, _k, _l in class_relations.values() if rel == REL_IRREGULAR)
     return {
         "skeleton_n_classes": len(within_class_structures),
         "n_within_other": n_within_other,
@@ -138,15 +140,13 @@ def _compute_skeleton_summary(class_relations: dict, within_class_structures: di
     }
 
 
-def analyze_single_molecule(smiles: str, zinc_id: str, fixed_wl_steps: int) -> dict:
+def analyze_single_molecule(smiles: str, zinc_id: str, fixed_wl_steps: int) -> dict[str, Any]:
     """
     Run the full identifiability analysis pipeline for a single molecule.
     """
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
-        print(
-            f"[WARN] parse failed: zinc_id={zinc_id} smiles={smiles}", file=sys.stderr
-        )
+        print(f"[WARN] parse failed: zinc_id={zinc_id} smiles={smiles}", file=sys.stderr)
         return {
             "zinc_id": zinc_id,
             "smiles": smiles,
@@ -161,9 +161,7 @@ def analyze_single_molecule(smiles: str, zinc_id: str, fixed_wl_steps: int) -> d
 
     try:
         wl_top = compute_wl_with_fixed_steps(graph, fixed_wl_steps, label_attr=None)
-        wl_atom = compute_wl_with_fixed_steps(
-            graph, fixed_wl_steps, label_attr="atomic_num"
-        )
+        wl_atom = compute_wl_with_fixed_steps(graph, fixed_wl_steps, label_attr="atomic_num")
 
     except Exception as error:
         print(
@@ -210,9 +208,7 @@ def analyze_single_molecule(smiles: str, zinc_id: str, fixed_wl_steps: int) -> d
     flip_summary = _compute_flip_graph_summary(flip_info_atom)
 
     try:
-        skeleton, class_relations, within_structures = build_skeleton(
-            flip_graph_atom, labels_atom
-        )
+        skeleton, class_relations, within_structures = build_skeleton(flip_graph_atom, labels_atom)
         lemma16 = check_lemma16_conditions(skeleton, within_structures)
         skeleton_summary = _compute_skeleton_summary(class_relations, within_structures)
 
@@ -234,26 +230,23 @@ def analyze_single_molecule(smiles: str, zinc_id: str, fixed_wl_steps: int) -> d
             **flip_summary,
         }
 
-    def _run_bouquet(flip_graph, labels, mode_tag):
+    def _run_bouquet(flip_graph: nx.Graph, labels: dict[Any, Any], mode_tag: str) -> dict[str, Any]:
         try:
-            return analyze_bouquet_forest_structure(
-                flip_graph, labels=labels
-            )
+            return analyze_bouquet_forest_structure(flip_graph, labels=labels)
         except Exception as error:
             print(
-                f"[WARN] bouquet_forest({mode_tag}) failed: zinc_id={zinc_id}"
-                f"  {type(error).__name__}: {error}",
+                f"[WARN] bouquet_forest({mode_tag}) failed: zinc_id={zinc_id}  {type(error).__name__}: {error}",
                 file=sys.stderr,
             )
             return {
                 "is_bouquet_forest": None,
-                "reason": f"unknown_error",
+                "reason": "unknown_error",
             }
 
     bf_top = _run_bouquet(flip_graph_top, labels_top, "top")
     bf_atom = _run_bouquet(flip_graph_atom, labels_atom, "atom")
 
-    def _verdict(bf: dict) -> int | None:
+    def _verdict(bf: dict[str, Any]) -> int | None:
         v = bf.get("is_bouquet_forest")
         return int(v) if v is not None else None
 
@@ -271,16 +264,16 @@ def analyze_single_molecule(smiles: str, zinc_id: str, fixed_wl_steps: int) -> d
         **skeleton_summary,
         "lemma16_all_satisfied": lemma16.get("all_satisfied"),
         "lemma16_violations": lemma16.get("violations", []),
-        "top_bouquet_forest_verdict":   _verdict(bf_top),
-        "top_bouquet_forest_reason":    bf_top.get("reason"),
-        "top_has_bouquet_component":    bf_top.get("has_bouquet_component"),
-        "atom_bouquet_forest_verdict":  _verdict(bf_atom),
-        "atom_bouquet_forest_reason":   bf_atom.get("reason"),
-        "atom_has_bouquet_component":   bf_atom.get("has_bouquet_component"),
+        "top_bouquet_forest_verdict": _verdict(bf_top),
+        "top_bouquet_forest_reason": bf_top.get("reason"),
+        "top_has_bouquet_component": bf_top.get("has_bouquet_component"),
+        "atom_bouquet_forest_verdict": _verdict(bf_atom),
+        "atom_bouquet_forest_reason": bf_atom.get("reason"),
+        "atom_has_bouquet_component": bf_atom.get("has_bouquet_component"),
     }
 
 
-def _worker_task(args: tuple) -> dict:
+def _worker_task(args: tuple[str, str, int]) -> dict[str, Any]:
     """Unpacks args and calls analyze_single_molecule. Must be top-level for pickling."""
     smiles, zinc_id, fixed_wl_steps = args
     return analyze_single_molecule(smiles=smiles, zinc_id=zinc_id, fixed_wl_steps=fixed_wl_steps)
@@ -299,10 +292,10 @@ def run_molecule_analysis_pipeline(
     """
     tasks = [
         (smiles, zinc_id, fixed_wl_steps)
-        for smiles, zinc_id in zip(df["smiles"].to_list(), df["zinc_id"].to_list())
+        for smiles, zinc_id in zip(df["smiles"].to_list(), df["zinc_id"].to_list(), strict=True)
     ]
 
-    rows: list[dict] = []
+    rows: list[dict[str, Any]] = []
     bad = 0
 
     if n_workers > 1:

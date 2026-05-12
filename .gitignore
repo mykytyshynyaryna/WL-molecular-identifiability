@@ -1,39 +1,83 @@
-# Data and generated results
-data/*
-results/*
-!data/.gitkeep
-!results/.gitkeep
-
-# Python cache
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
+*$py.class
 
-# Test / lint / typecheck caches
+# C extensions
+*.so
+
+# Distribution / packaging (hatchling)
+build/
+dist/
+*.egg-info/
+*.egg
+MANIFEST
+wheels/
+share/python-wheels/
+
+# Unit test / coverage reports
 .pytest_cache/
-.mypy_cache/
-.ruff_cache/
 .coverage
+.coverage.*
 htmlcov/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Type checkers
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
 
 # Virtual environments
 .venv/
 venv/
 env/
+ENV/
 
-# Build artifacts
-build/
-dist/
-*.egg-info/
-
-# Jupyter
+# Jupyter Notebook
 .ipynb_checkpoints/
 
-# OS files
+# pyenv
+.python-version
+
+# pixi — lock file is tracked intentionally (pins the environment)
+# pixi.lock
+
+# Local config / secrets
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
 .DS_Store
 Thumbs.db
 
-# Editors / IDEs
-.vscode/
-.idea/
+# Logs
+*.log
+
+# =============================================================================
+# Project-specific (WL-molecular-identifiability)
+# =============================================================================
+
+# Raw datasets — never commit
+data/raw/
+
+# Processed data — ignore everything except the MUTAG example dataset
+data/processed/*
+!data/processed/.gitkeep
+!data/processed/MUTAG/
+!data/processed/MUTAG/**
+
+# Generated results
+results/
+!results/.gitkeep
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3

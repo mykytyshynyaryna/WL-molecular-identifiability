@@ -9,7 +9,7 @@ platforms = ["win-64", "linux-64", "osx-arm64"]
 # Runtime dependencies (all from conda-forge so rdkit resolves correctly)
 # ---------------------------------------------------------------------------
 [dependencies]
-python = ">=3.10,<3.13"
+python = ">=3.12,<3.13"
 networkx = "3.3.*"
 numpy = "1.26.*"
 matplotlib-base = "3.9.*"
@@ -20,10 +20,11 @@ rdkit = "2025.9.*"
 # Development dependencies (linting, formatting, testing, type-checking)
 # ---------------------------------------------------------------------------
 [feature.dev.dependencies]
-pytest = ">=8.0"
-pytest-cov = ">=5.0"
-ruff = ">=0.4"
-mypy = ">=1.10"
+pixi-pycharm = ">=0.0.9,<0.0.10"
+pytest = ">=8,<9"
+pytest-cov = ">=5,<6"
+ruff = ">=0.11,<1"
+mypy = ">=1.10,<2"
 
 # The package itself — installed as editable so imports resolve to source
 [feature.dev.pypi-dependencies]
@@ -33,10 +34,10 @@ wl-identifiability = { path = ".", editable = true }
 # Tasks
 # ---------------------------------------------------------------------------
 [feature.dev.tasks]
-test     = "pytest tests/ -v --tb=short"
-lint     = "ruff check src/wl_identifiability/ tests/"
-format   = "ruff format src/wl_identifiability/ tests/"
-typecheck = "mypy src/wl_identifiability/ --no-site-packages"
+test      = "pytest tests/"
+lint      = "ruff check src/wl_identifiability/ tests/ scripts/ examples/"
+fmt       = "ruff format src/wl_identifiability/ tests/ scripts/ examples/"
+typecheck = "mypy src/wl_identifiability/"
 
 # ---------------------------------------------------------------------------
 # Default environment includes dev features

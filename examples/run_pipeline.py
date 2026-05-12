@@ -6,24 +6,25 @@ import sys
 import traceback
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import polars as pl
 
+from scripts.database.db import (
+    insert_row as db_insert_row,
+)
+from scripts.database.db import (
+    open_db,
+    write_dataset_summary_row,
+)
 from wl_identifiability.experiments import (
     estimate_fixed_wl_steps_from_dataframe,
     run_molecule_analysis_pipeline,
 )
-from scripts.database.db import (
-    open_db,
-    insert_row as db_insert_row,
-    write_dataset_summary_row,
-)
-
-
 
 DEFAULT_RESULTS_DIR = Path("results")
 DEFAULT_GLOBAL_DB = DEFAULT_RESULTS_DIR / "all_results.db"
 DEFAULT_SUMMARY_CSV = DEFAULT_RESULTS_DIR / "summary.csv"
-
 
 
 def load_dataset(path: str) -> pl.DataFrame:
@@ -96,11 +97,11 @@ def build_summary_text(
         v = res.select(pl.col(col).max()).item()
         return _safe_int(v)
 
-    top_bouquet_forest  = _col_sum("top_bouquet_forest_verdict")
+    top_bouquet_forest = _col_sum("top_bouquet_forest_verdict")
     atom_bouquet_forest = _col_sum("atom_bouquet_forest_verdict")
-    avg_colors_top    = _col_mean("n_colors_top")
-    avg_colors_atom   = _col_mean("n_colors_atom")
-    avg_color_ratio   = _col_mean("color_ratio_atom_to_top")
+    avg_colors_top = _col_mean("n_colors_top")
+    avg_colors_atom = _col_mean("n_colors_atom")
+    avg_color_ratio = _col_mean("color_ratio_atom_to_top")
     avg_flipped_edges = _col_mean("n_flipped_edges")
     max_flipped_edges = _col_max("n_flipped_edges")
 
@@ -161,21 +162,21 @@ def build_summary_row(
         return _safe_int(res.select(pl.col(col).max()).item())
 
     return {
-        "dataset_name":      dataset_name,
-        "sample_size":       sample_size,
-        "wl_cap":            cap,
-        "k_max":             k_max,
-        "k_p95":             k_p95,
-        "wl_steps_used":     k_max,
-        "total_molecules":   total,
-        "parsed_ok":         ok_count,
-        "parsed_ok_pct":     ok_pct,
-        "parse_wl_errors":   bad,
-        "bf_verdict_top":    _col_sum("top_bouquet_forest_verdict"),
-        "bf_verdict_atom":   _col_sum("atom_bouquet_forest_verdict"),
-        "avg_colors_top":    _col_mean("n_colors_top"),
-        "avg_colors_atom":   _col_mean("n_colors_atom"),
-        "avg_color_ratio":   _col_mean("color_ratio_atom_to_top"),
+        "dataset_name": dataset_name,
+        "sample_size": sample_size,
+        "wl_cap": cap,
+        "k_max": k_max,
+        "k_p95": k_p95,
+        "wl_steps_used": k_max,
+        "total_molecules": total,
+        "parsed_ok": ok_count,
+        "parsed_ok_pct": ok_pct,
+        "parse_wl_errors": bad,
+        "bf_verdict_top": _col_sum("top_bouquet_forest_verdict"),
+        "bf_verdict_atom": _col_sum("atom_bouquet_forest_verdict"),
+        "avg_colors_top": _col_mean("n_colors_top"),
+        "avg_colors_atom": _col_mean("n_colors_atom"),
+        "avg_color_ratio": _col_mean("color_ratio_atom_to_top"),
         "avg_flipped_edges": _col_mean("n_flipped_edges"),
         "max_flipped_edges": _col_max("n_flipped_edges"),
     }
@@ -227,7 +228,6 @@ def finalize_sqlite_db(db_path: Path) -> None:
             print(f"  [WARN] Could not remove {extra_file.name} — file is still open in another program.")
 
 
-
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Run the full molecule identifiability pipeline.")
     p.add_argument("--data", default="data/AAAA.smi", help="Path to .smi dataset file")
@@ -235,11 +235,10 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--cap", type=int, default=50, help="Max WL iterations cap")
     p.add_argument(
         "--db",
-        default=str(DEFAULT_GLOBAL_DB),
+        default=None,
         help=(
-            "Shared SQLite DB path for all per-molecule results. "
-            f"Default: {DEFAULT_GLOBAL_DB}. All datasets write into the same "
-            "database, tagged with the dataset_name column."
+            "SQLite DB path for per-molecule results. "
+            "Default: results/<dataset_stem>.db (derived from --data filename)."
         ),
     )
     p.add_argument(
@@ -281,13 +280,13 @@ def main() -> int:
 
     dataset_name = data_path.name
 
-    db_path = Path(args.db)
+    db_path = Path(args.db) if args.db else DEFAULT_RESULTS_DIR / f"{data_path.stem}.db"
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
     summary_csv_path = Path(args.summary_csv)
     summary_csv_path.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"  SQLite DB        : {db_path}  (shared)")
+    print(f"  SQLite DB        : {db_path}")
     print(f"  Summary CSV      : {summary_csv_path}  (one row per dataset)")
 
     print(f"\n=== 3. Estimating WL steps (sample={args.sample}, cap={args.cap}) ===")

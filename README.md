@@ -1,6 +1,8 @@
 # Is 1-WL Expressivity Sufficient for Molecular Graphs?
 
-> **Note:** This is the `main` branch — implementation only: the core `wl_identifiability` package, pipeline scripts, tests, and download utilities. The `thesis` branch additionally contains research results across 16 M molecules, Jupyter notebooks with per-dataset analysis, and the full thesis writeup context.
+> **Note:**
+> - branch `main` — clean implementation branch with source code, examples, tests, and minimal reproducibility instructions.
+> - branch `thesis` — extended research branch with profiling, benchmarks, notebooks, interesting cases, figures, and thesis-related experimental materials.
 
 This project investigates whether the **1-Weisfeiler-Lehman (1-WL) graph isomorphism test** can uniquely identify every molecule in standard benchmark datasets. The pipeline runs WL coloring on molecular graphs, builds a flip graph from the stable color partition, and checks each connected component against the bouquet forest criterion to detect non-identifiable molecules.
 
@@ -14,7 +16,7 @@ This project investigates whether the **1-Weisfeiler-Lehman (1-WL) graph isomorp
 - *Topological* — initial node colour is uniform (structure only, no atom labels).
 - *Atom-aware* — initial node colour encodes the atomic symbol, so chemical identity is used from the first iteration.
 
-**Bouquet forest** (Kiefer 2020, Definition 9 / Theorem 17): a graph is a *bouquet* if it consists of a single C₅ cycle with zero or more pendant trees ("petals") attached at one vertex. A *bouquet forest* is a disjoint union of isomorphic bouquets. Theorem 17 states that a graph is *not* uniquely identified by 1-WL if and only if its flip graph decomposes into a bouquet forest with at least two components.
+**Bouquet forest** (Kiefer 2020, Definition 9 / Theorem 17): a graph is a *bouquet* if it consists of a single C₅ cycle with exactly five rooted trees ("petals") — one attached at each cycle vertex — where all five petals are mutually isomorphic. A *bouquet forest* is a disjoint union of isomorphic bouquets. Theorem 17 states that a graph is *not* uniquely identified by 1-WL if and only if its flip graph decomposes into a bouquet forest with at least two components.
 
 **Reference:** Kiefer, S. (2020). *The Weisfeiler-Leman Algorithm: Its Power and Limitations.* Habilitation thesis, RWTH Aachen University.
 
@@ -33,7 +35,7 @@ This project investigates whether the **1-Weisfeiler-Lehman (1-WL) graph isomorp
 
 ## Key findings
 
-Across **16,085,612 molecules** (MUTAG + NCI1 + NCI109 + ZINC20):
+Across **16,085,610 molecules** (MUTAG + NCI1 + NCI109 + ZINC20):
 
 | Verdict | Count | Share |
 |---------|-------|-------|
@@ -56,7 +58,7 @@ Across **16,085,612 molecules** (MUTAG + NCI1 + NCI109 + ZINC20):
 
 ## Prerequisites
 
-- Python 3.10–3.12
+- Python 3.12
 - [pixi](https://pixi.sh) (recommended — handles rdkit automatically via conda-forge)
 
 ---
@@ -75,10 +77,10 @@ This creates an isolated environment with all dependencies (networkx, numpy, pol
 
 | Package | Version |
 |---------|---------|
-| Python | 3.10 – 3.12 |
+| Python | 3.12 |
 | RDKit | ≥ 2023.09 |
 | NetworkX | ≥ 3.1 |
-| pandas | ≥ 2.0 |
+| polars | ≥ 1.0 |
 | pytest | ≥ 7.0 |
 
 **Alternative (pip):**
@@ -107,7 +109,12 @@ python examples/run_pipeline.py --data data/processed/MUTAG/mutag_smiles.smi --s
 
 ## 2. Download datasets
 
-All datasets go into `data/raw/`. Run from the project root.
+> **Ready to test right away:** `data/processed/MUTAG/mutag_smiles.smi` (188 molecules, 8 KB) is already included in the repository — no download or parsing needed. Jump straight to [step 4](#4-run-the-pipeline):
+> ```bash
+> python examples/run_pipeline.py --data data/processed/MUTAG/mutag_smiles.smi
+> ```
+
+All full datasets go into `data/raw/`. Run from the project root.
 
 **Download everything at once:**
 
@@ -140,6 +147,38 @@ data/raw/
 ```
 
 > Scripts skip files that already exist. To force a fresh download, delete the target folder and re-run.
+
+### ZINC20 full dataset (tranches)
+
+The 250k subset above is enough for quick experiments. To reproduce the full thesis results (~16 M molecules), download ZINC20 by tranches using the URI list already included in the repo:
+
+```bash
+python scripts/download/download_data/download_zinc_from_uri.py \
+    --uri scripts/download/download_data/ZINC-downloader-2D-smi.uri \
+    --workers 8
+```
+
+Downloads land in `data/raw/ZINC20/` as individual `.smi` tranche files. The script retries failed files automatically (5 attempts, exponential backoff).
+
+**Useful options:**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--uri` | — | Path to the `.uri` file (required — see above) |
+| `--out` | `data/raw/ZINC20/` | Output directory |
+| `--workers` | `3` | Parallel download threads |
+| `--n` | all | Limit to first N files (useful for testing) |
+| `--retries` | `5` | Max attempts per file |
+
+**Test with a small batch first:**
+
+```bash
+python scripts/download/download_data/download_zinc_from_uri.py \
+    --uri scripts/download/download_data/ZINC-downloader-2D-smi.uri \
+    --n 10 --workers 4
+```
+
+> The `.uri` file was generated from the [ZINC20 download interface](https://zinc20.docking.org/tranches/home/) with filter: 2D → SMILES format. To update the tranche selection, download a new `.uri` file from ZINC20 and replace `scripts/download/download_data/ZINC-downloader-2D-smi.uri`.
 
 ---
 
@@ -185,6 +224,38 @@ python examples/run_pipeline.py --data data/raw/ZINC/zinc250k.smi
 python examples/run_pipeline.py --data data/raw/ZINC/zinc250k.smi --workers 4
 ```
 
+### ZINC20 tranches (sequential run over all files)
+
+After downloading tranches to `data/raw/ZINC20/` (see section 2), run the pipeline on each `.smi` file one after another.
+
+**Linux / macOS:**
+
+```bash
+for f in data/raw/ZINC20/*.smi; do
+    python examples/run_pipeline.py --data "$f" --workers 4
+done
+```
+
+**Windows (PowerShell):**
+
+```powershell
+Get-ChildItem data\raw\ZINC20\*.smi | ForEach-Object {
+    python examples/run_pipeline.py --data $_.FullName --workers 4
+}
+```
+
+Each tranche produces its own SQLite database in `results/` (e.g. `results/AAAA.db`) and appends one summary row to the shared `results/summary.csv`.
+
+**To test on a single tranche first:**
+
+```bash
+python examples/run_pipeline.py --data data/raw/ZINC20/AAAA.smi --workers 4
+```
+
+**If a run is interrupted**, simply re-run the loop — files whose results already exist in the database are not reprocessed (the DB row for that tranche is updated in place).
+
+---
+
 **All CLI options:**
 
 | Argument | Default | Description |
@@ -192,7 +263,7 @@ python examples/run_pipeline.py --data data/raw/ZINC/zinc250k.smi --workers 4
 | `--data` | `data/AAAA.smi` | Path to `.smi` input file |
 | `--sample` | `300` | Molecules sampled to auto-estimate WL step count K |
 | `--cap` | `50` | Max WL iterations allowed during K estimation |
-| `--db` | `results/all_results.db` | SQLite database — all datasets share one file |
+| `--db` | `results/<dataset_stem>.db` | SQLite database path; derived from input filename by default |
 | `--summary-csv` | `results/summary.csv` | CSV with one summary row per dataset |
 | `--workers` | `1` | Parallel worker processes (`multiprocessing.Pool`) |
 
@@ -223,11 +294,14 @@ K is estimated automatically from a random sample of `--sample` molecules before
 
 ```
 results/
-├── all_results.db    # SQLite — one row per molecule, tagged by dataset_name
+├── mutag_smiles.db   # SQLite — one DB per dataset, one row per molecule
+├── nci1_smiles.db
+├── nci109_smiles.db
+├── <tranche_name>.db # one file per ZINC20 tranche
 └── summary.csv       # one row per dataset; re-running replaces the existing row
 ```
 
-Key columns in `all_results.db`:
+Key columns in the per-dataset `.db` files (e.g. `results/mutag_smiles.db`):
 
 | Column | Description |
 |--------|-------------|
@@ -235,19 +309,21 @@ Key columns in `all_results.db`:
 | `dataset_name` | Source file name (e.g. `mutag_smiles.smi`) |
 | `smiles` | Input SMILES |
 | `n_nodes` / `n_edges` | Graph size |
-| `n_colors_top` / `n_colors_atom` | WL color counts (topological / atom-aware) |
-| `top_bouquet_forest_verdict` | `1` = flip graph is a bouquet forest (topological WL) |
-| `atom_bouquet_forest_verdict` | `1` = flip graph is a bouquet forest (atom-aware WL) |
+| `wl_stats` | JSON blob with per-molecule WL metrics: `n_colors_top`, `n_colors_atom`, `wl_converged_top/atom`, `wl_iters_top/atom`, `color_ratio_atom_to_top` |
+| `top_bouquet_forest_verdict` | `1` = molecule is identifiable under topological WL; `0` = not identifiable or invalid flip structure |
+| `atom_bouquet_forest_verdict` | `1` = molecule is identifiable under atom-aware WL; `0` = not identifiable or invalid flip structure |
 
 **`summary.csv` columns:**
 
 | Column | Description |
 |--------|-------------|
 | `dataset_name` | Source file name |
-| `total` | Total molecules processed |
-| `identifiable_top` | Identifiable count (topological WL) |
-| `identifiable_atom` | Identifiable count (atom-aware WL) |
-| `pct_identifiable_atom` | Percentage identifiable (atom-aware) |
+| `total_molecules` | Total molecules processed |
+| `parsed_ok` / `parsed_ok_pct` | Successfully parsed count and percentage |
+| `bf_verdict_top` | Identifiable count (topological WL) |
+| `bf_verdict_atom` | Identifiable count (atom-aware WL) |
+| `k_max` / `k_p95` | WL step estimates (max and 95th percentile) |
+| `avg_colors_top` / `avg_colors_atom` | Average WL color class counts |
 
 **Example SQLite queries:**
 
@@ -290,7 +366,7 @@ done
 | NCI109 | 4 127 | ~2 min |
 | ZINC20 | ~16 M | ~12 h |
 
-Results are written to `results/all_results.db` and `results/summary.csv` as the pipeline runs (crash-safe via SQLite transactions).
+Results are written to `results/<dataset_stem>.db` (one SQLite file per dataset) and `results/summary.csv` as the pipeline runs (crash-safe via SQLite transactions).
 
 ---
 
@@ -317,15 +393,24 @@ scripts/
 
 ---
 
-## 9. Tests
+## 9. Tests and developer checks
 
 ```bash
+# Run the test suite
 pixi run test
-# or
-pytest tests/ -v --tb=short
+# or: pytest tests/ -v --tb=short
+
+# Lint (src/wl_identifiability/, tests/, scripts/, examples/)
+pixi run lint
+
+# Format (same scope as lint)
+pixi run fmt
+
+# Type-check (src/wl_identifiability/ only)
+pixi run typecheck
 ```
 
-The suite covers WL coloring, graph construction, flip graph, skeleton, bouquet detection, experiments, and visualisation.
+The test suite covers WL coloring, graph construction, flip graph, skeleton, bouquet detection, experiments, and visualisation.
 
 ---
 
@@ -341,7 +426,7 @@ conda install -c conda-forge rdkit
 ```
 
 **`FileNotFoundError: data/processed/MUTAG/mutag_smiles.smi`**
-Run the parsing script first (step 3).
+`mutag_smiles.smi` is included in the repository — no download or parsing needed. Check that the repository was cloned correctly and that `data/processed/MUTAG/mutag_smiles.smi` exists.
 
 **`FileNotFoundError: data/raw/MUTAG/MUTAG/MUTAG_A.txt`**
 Run the download script first (step 2).
@@ -350,7 +435,7 @@ Run the download script first (step 2).
 Use `--workers N` where N matches your CPU count. For ZINC 250k, `--workers 4` is a good starting point.
 
 **SQLite DB already exists**
-`INSERT OR REPLACE` is used, so re-running the same dataset overwrites existing rows. To start fresh, delete `results/all_results.db`.
+`INSERT OR REPLACE` is used, so re-running the same dataset overwrites existing rows. To start fresh, delete the per-dataset file (e.g. `results/mutag_smiles.db`).
 
 ---
 

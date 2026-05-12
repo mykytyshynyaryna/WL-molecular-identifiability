@@ -11,6 +11,7 @@ local URI list file. Run it separately when you have that file available.
 Usage:
     python scripts/download/download_all.py
 """
+
 from __future__ import annotations
 
 import subprocess
@@ -27,7 +28,6 @@ DOWNLOAD_SCRIPTS = [
     SCRIPTS_DIR / "download_enzymes.py",
     SCRIPTS_DIR / "download_zinc.py",
 ]
-
 
 
 def run_script(script: Path) -> int:

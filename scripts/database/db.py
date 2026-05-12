@@ -17,13 +17,13 @@ Old columns that may exist in legacy files (bouquet_forest_verdict, reason,
 mode, top_non_identifiable, atom_non_identifiable) are left untouched —
 SQLite cannot drop columns portably, and keeping them is harmless.
 """
+
 from __future__ import annotations
 
 import csv
 import json
 import sqlite3
 from pathlib import Path
-
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS results (
@@ -44,19 +44,19 @@ CREATE TABLE IF NOT EXISTS results (
 """
 
 EXPECTED_RESULTS_COLUMNS: list[tuple[str, str]] = [
-    ("molecule_id",                 "TEXT"),
-    ("dataset_name",                "TEXT"),
-    ("smiles",                      "TEXT"),
-    ("n_nodes",                     "INTEGER"),
-    ("n_edges",                     "INTEGER"),
-    ("wl_stats",                    "TEXT"),
-    ("flip_graph_stats",            "TEXT"),
-    ("top_bouquet_forest_verdict",  "INTEGER"),
+    ("molecule_id", "TEXT"),
+    ("dataset_name", "TEXT"),
+    ("smiles", "TEXT"),
+    ("n_nodes", "INTEGER"),
+    ("n_edges", "INTEGER"),
+    ("wl_stats", "TEXT"),
+    ("flip_graph_stats", "TEXT"),
+    ("top_bouquet_forest_verdict", "INTEGER"),
     ("atom_bouquet_forest_verdict", "INTEGER"),
-    ("top_bouquet_forest_reason",   "TEXT"),
-    ("atom_bouquet_forest_reason",  "TEXT"),
-    ("top_has_bouquet_component",   "INTEGER"),
-    ("atom_has_bouquet_component",  "INTEGER"),
+    ("top_bouquet_forest_reason", "TEXT"),
+    ("atom_bouquet_forest_reason", "TEXT"),
+    ("top_has_bouquet_component", "INTEGER"),
+    ("atom_has_bouquet_component", "INTEGER"),
 ]
 
 
@@ -206,12 +206,21 @@ def insert_row(conn: sqlite3.Connection, row: dict, dataset_name: str = "") -> N
     that do not pass this argument.
     """
     wl_keys = {
-        "wl_converged_top", "wl_iters_top", "wl_budget_top", "n_colors_top",
-        "wl_converged_atom", "wl_iters_atom", "wl_budget_atom", "n_colors_atom",
+        "wl_converged_top",
+        "wl_iters_top",
+        "wl_budget_top",
+        "n_colors_top",
+        "wl_converged_atom",
+        "wl_iters_atom",
+        "wl_budget_atom",
+        "n_colors_atom",
         "color_ratio_atom_to_top",
     }
     flip_keys = {
-        "within_copy", "within_flip", "between_copy", "between_flip",
+        "within_copy",
+        "within_flip",
+        "between_copy",
+        "between_flip",
         "n_flipped_edges",
     }
 

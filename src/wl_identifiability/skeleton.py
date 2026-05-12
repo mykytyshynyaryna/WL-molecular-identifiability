@@ -15,8 +15,9 @@ the necessary direction (identified → bouquet forest structure).
 
 from __future__ import annotations
 
-from ._imports import nx
+from typing import Any
 
+import networkx as nx
 
 REL_EMPTY: str = "empty"
 
@@ -27,11 +28,10 @@ REL_FAN: str = "fan"
 REL_IRREGULAR: str = "irregular"
 
 
-
 def classify_between_class_relation(
     F: nx.Graph,
-    P: list,
-    Q: list,
+    P: list[Any],
+    Q: list[Any],
 ) -> tuple[str, int, int]:
     """
     Classify the biregular edge relation between partition classes P and Q
@@ -71,20 +71,19 @@ def classify_between_class_relation(
     if len(set(k_vals)) != 1 or len(set(l_vals)) != 1:
         return REL_IRREGULAR, -1, -1
 
-    k, l = k_vals[0], l_vals[0]
+    k, l_deg = k_vals[0], l_vals[0]
 
-    if k == 0 and l == 0:
+    if k == 0 and l_deg == 0:
         return REL_EMPTY, 0, 0
-    if k == 1 and l == 1:
+    if k == 1 and l_deg == 1:
         return REL_MATCHING, 1, 1
-    if (k >= 2 and l == 1) or (k == 1 and l >= 2):
-        return REL_FAN, k, l
+    if (k >= 2 and l_deg == 1) or (k == 1 and l_deg >= 2):
+        return REL_FAN, k, l_deg
 
-    return REL_IRREGULAR, k, l
+    return REL_IRREGULAR, k, l_deg
 
 
-
-def classify_within_class_structure(F: nx.Graph, P: list) -> str:
+def classify_within_class_structure(F: nx.Graph, P: list[Any]) -> str:
     """
     Classify the induced subgraph on partition class P in flip graph F.
 
@@ -117,21 +116,16 @@ def classify_within_class_structure(F: nx.Graph, P: list) -> str:
     active = [v for v in H.nodes() if H.degree(v) > 0]
     if len(active) == 5:
         H5 = H.subgraph(active)
-        if (
-            H5.number_of_edges() == 5
-            and all(d == 2 for _, d in H5.degree())
-            and nx.is_connected(H5)
-        ):
+        if H5.number_of_edges() == 5 and all(d == 2 for _, d in H5.degree()) and nx.is_connected(H5):
             return "cycle5"
 
     return "other"
 
 
-
 def build_skeleton(
     F: nx.Graph,
-    labels: dict,
-) -> tuple[nx.DiGraph, dict, dict]:
+    labels: dict[Any, Any],
+) -> tuple[nx.DiGraph, dict[tuple[Any, Any], tuple[str, int, int]], dict[Any, str]]:
     """
     Build skeleton graph S_G (Kiefer, Section 4) from flip graph F and
     the C²-partition assignment ``labels``.
@@ -162,16 +156,13 @@ def build_skeleton(
                             unordered class pairs (ci < cj in insertion order)
     within_class_structures : dict {ci → structure_label}
     """
-    color2nodes: dict = {}
+    color2nodes: dict[Any, list[Any]] = {}
     for v, c in labels.items():
         color2nodes.setdefault(c, []).append(v)
 
     colors = list(color2nodes.keys())
 
-    within_class_structures: dict = {
-        c: classify_within_class_structure(F, color2nodes[c])
-        for c in colors
-    }
+    within_class_structures: dict[Any, str] = {c: classify_within_class_structure(F, color2nodes[c]) for c in colors}
 
     S: nx.DiGraph = nx.DiGraph()
     for c in colors:
@@ -181,7 +172,7 @@ def build_skeleton(
             class_size=len(color2nodes[c]),
         )
 
-    class_relations: dict = {}
+    class_relations: dict[tuple[Any, Any], tuple[str, int, int]] = {}
 
     for i in range(len(colors)):
         ci = colors[i]
@@ -190,26 +181,25 @@ def build_skeleton(
             cj = colors[j]
             Pj = color2nodes[cj]
 
-            rel, k, l = classify_between_class_relation(F, Pi, Pj)
-            class_relations[(ci, cj)] = (rel, k, l)
+            rel, k, l_deg = classify_between_class_relation(F, Pi, Pj)
+            class_relations[(ci, cj)] = (rel, k, l_deg)
 
             if rel == REL_MATCHING:
-                S.add_edge(ci, cj, relation=REL_MATCHING, k=k, l=l)
-                S.add_edge(cj, ci, relation=REL_MATCHING, k=l, l=k)
+                S.add_edge(ci, cj, relation=REL_MATCHING, k=k, l=l_deg)
+                S.add_edge(cj, ci, relation=REL_MATCHING, k=l_deg, l=k)
             elif rel == REL_FAN:
-                if k >= 2 and l == 1:
-                    S.add_edge(ci, cj, relation=REL_FAN, k=k, l=l)
+                if k >= 2 and l_deg == 1:
+                    S.add_edge(ci, cj, relation=REL_FAN, k=k, l=l_deg)
                 else:
-                    S.add_edge(cj, ci, relation=REL_FAN, k=l, l=k)
+                    S.add_edge(cj, ci, relation=REL_FAN, k=l_deg, l=k)
 
     return S, class_relations, within_class_structures
 
 
-
 def check_lemma16_conditions(
     skeleton: nx.DiGraph,
-    within_class_structures: dict,
-) -> dict:
+    within_class_structures: dict[Any, str],
+) -> dict[str, Any]:
     """
     Check the three structural conditions of Lemma 16 (Kiefer) on S_G.
 
@@ -265,15 +255,12 @@ def check_lemma16_conditions(
             "Conditions 1 and 2 below are checked via shortest paths only."
         )
 
-    fan_targets: dict = {}
+    fan_targets: dict[Any, set[Any]] = {}
     for u, v, data in skeleton.edges(data=True):
         if data.get("relation") == REL_FAN:
             fan_targets.setdefault(u, set()).add(v)
 
-    exception_nodes: set = {
-        c for c, s in within_class_structures.items()
-        if s in ("matching", "cycle5")
-    }
+    exception_nodes: set[Any] = {c for c, s in within_class_structures.items() if s in ("matching", "cycle5")}
 
     cond1 = True
     fan_source_list = list(fan_targets.keys())
@@ -291,9 +278,7 @@ def check_lemma16_conditions(
             if first_is_fan and last_is_fan_back:
                 cond1 = False
                 violations.append(
-                    f"Condition 1 violated: opposing fan sources "
-                    f"{u} (→{path[1]}) and {v} (→{path[-2]}) "
-                    f"on path {path}"
+                    f"Condition 1 violated: opposing fan sources {u} (→{path[1]}) and {v} (→{path[-2]}) on path {path}"
                 )
 
     cond2 = True
@@ -321,8 +306,7 @@ def check_lemma16_conditions(
         if len(ex_in_comp) > 1:
             cond3 = False
             violations.append(
-                f"Condition 3 violated: {len(ex_in_comp)} exception classes "
-                f"in one component: {ex_in_comp}"
+                f"Condition 3 violated: {len(ex_in_comp)} exception classes in one component: {ex_in_comp}"
             )
 
     all_ok = skeleton_is_forest and cond1 and cond2 and cond3

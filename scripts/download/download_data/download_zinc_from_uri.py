@@ -15,6 +15,7 @@ Usage (from project root):
     python scripts/download/download_zinc_from_uri.py --uri path/to/file.uri --n 100
     python scripts/download/download_zinc_from_uri.py --workers 16
 """
+
 from __future__ import annotations
 
 import argparse
@@ -25,7 +26,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from threading import Lock
 
-
 ROOT_DIR = Path(__file__).resolve().parents[3]
 DEFAULT_URI = ROOT_DIR / "ZINC-downloader-2D-smi.uri"
 DEFAULT_OUT = ROOT_DIR / "data" / "raw" / "ZINC20"
@@ -34,11 +34,8 @@ DEFAULT_RETRIES = 5
 DEFAULT_BACKOFF = 2.0
 
 
-
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(
-        description="Download all ZINC .smi tranche files listed in a .uri file."
-    )
+    p = argparse.ArgumentParser(description="Download all ZINC .smi tranche files listed in a .uri file.")
     p.add_argument(
         "--uri",
         default=str(DEFAULT_URI),
@@ -76,7 +73,6 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
-
 _print_lock = Lock()
 
 
@@ -109,8 +105,7 @@ def _download_one(
                 url,
                 headers={
                     "User-Agent": (
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                        "AppleWebKit/537.36 Chrome/124.0 Safari/537.36"
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36"
                     )
                 },
             )
@@ -125,10 +120,7 @@ def _download_one(
             last_exc = str(exc)
             if attempt < retries:
                 with _print_lock:
-                    print(
-                        f"  [{idx:>4}/{total}] RETRY {attempt}/{retries}  {filename}"
-                        f"  ({exc})  — waiting {wait:.0f}s"
-                    )
+                    print(f"  [{idx:>4}/{total}] RETRY {attempt}/{retries}  {filename}  ({exc})  — waiting {wait:.0f}s")
                 time.sleep(wait)
                 wait *= 2
             else:
@@ -144,7 +136,7 @@ def main() -> int:
     uri_path = Path(args.uri)
     if not uri_path.exists():
         print(f"ERROR: URI file not found: {uri_path}")
-        print(f"  Make sure the file exists or pass --uri <path>")
+        print("  Make sure the file exists or pass --uri <path>")
         return 1
 
     out_dir = Path(args.out)
@@ -171,9 +163,7 @@ def main() -> int:
 
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         futures = {
-            pool.submit(
-                _download_one, url, out_dir, i + 1, total, args.retries, args.backoff
-            ): url
+            pool.submit(_download_one, url, out_dir, i + 1, total, args.retries, args.backoff): url
             for i, url in enumerate(urls)
         }
         for future in as_completed(futures):

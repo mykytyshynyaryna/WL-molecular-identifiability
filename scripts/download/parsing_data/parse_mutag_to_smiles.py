@@ -22,18 +22,19 @@ Or with explicit paths:
         --data-dir data/raw/MUTAG/MUTAG \\
         --out data/processed/MUTAG/mutag_smiles.smi
 """
+
 from __future__ import annotations
 
 import argparse
 import sys
-from pathlib import Path
 from collections import defaultdict
+from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT_DIR))
 
-from rdkit import Chem
-from rdkit.Chem import RWMol, SanitizeMol
+from rdkit import Chem  # noqa: E402
+from rdkit.Chem import RWMol, SanitizeMol  # noqa: E402
 
 ATOM_MAP: dict[int, str] = {0: "C", 1: "N", 2: "O", 3: "F", 4: "I", 5: "Cl", 6: "Br"}
 
@@ -43,7 +44,6 @@ BOND_MAP: dict[int, Chem.rdchem.BondType] = {
     2: Chem.rdchem.BondType.DOUBLE,
     3: Chem.rdchem.BondType.TRIPLE,
 }
-
 
 
 def _read_column(path: Path) -> list[int]:
@@ -69,19 +69,17 @@ def parse_mutag(data_dir: Path) -> list[dict]:
         {graph_id, label, nodes: {node_id: atom_symbol}, edges: [(u, v, bond_type_int)]}
     """
     graph_indicator = _read_column(data_dir / "MUTAG_graph_indicator.txt")
-    node_labels     = _read_column(data_dir / "MUTAG_node_labels.txt")
-    graph_labels    = _read_column(data_dir / "MUTAG_graph_labels.txt")
-    edges           = _read_edges(data_dir / "MUTAG_A.txt")
-    edge_labels     = _read_column(data_dir / "MUTAG_edge_labels.txt")
+    node_labels = _read_column(data_dir / "MUTAG_node_labels.txt")
+    graph_labels = _read_column(data_dir / "MUTAG_graph_labels.txt")
+    edges = _read_edges(data_dir / "MUTAG_A.txt")
+    edge_labels = _read_column(data_dir / "MUTAG_edge_labels.txt")
 
     nodes_per_graph: dict[int, dict[int, str]] = defaultdict(dict)
-    for node_id, (graph_id, label_idx) in enumerate(
-        zip(graph_indicator, node_labels), start=1
-    ):
+    for node_id, (graph_id, label_idx) in enumerate(zip(graph_indicator, node_labels, strict=True), start=1):
         nodes_per_graph[graph_id][node_id] = ATOM_MAP[label_idx]
 
     edges_per_graph: dict[int, list[tuple[int, int, int]]] = defaultdict(list)
-    for (u, v), bond_label in zip(edges, edge_labels):
+    for (u, v), bond_label in zip(edges, edge_labels, strict=True):
         if u < v:
             graph_id = graph_indicator[u - 1]
             edges_per_graph[graph_id].append((u, v, bond_label))
@@ -99,24 +97,19 @@ def parse_mutag(data_dir: Path) -> list[dict]:
     return graphs
 
 
-
 _BOND_ORDER = {
-    Chem.rdchem.BondType.SINGLE:   1,
-    Chem.rdchem.BondType.DOUBLE:   2,
-    Chem.rdchem.BondType.TRIPLE:   3,
+    Chem.rdchem.BondType.SINGLE: 1,
+    Chem.rdchem.BondType.DOUBLE: 2,
+    Chem.rdchem.BondType.TRIPLE: 3,
     Chem.rdchem.BondType.AROMATIC: 1,
 }
 
-_NORMAL_VALENCE: dict[str, int] = {"C": 4, "N": 3, "O": 2, "F": 1,
-                                    "Cl": 1, "Br": 1, "I": 1}
+_NORMAL_VALENCE: dict[str, int] = {"C": 4, "N": 3, "O": 2, "F": 1, "Cl": 1, "Br": 1, "I": 1}
 
 
 def _explicit_valence(atom: Chem.rdchem.Atom) -> int:
     """Sum of bond orders for all bonds of this atom (pre-sanitization)."""
-    return sum(
-        _BOND_ORDER.get(bond.GetBondType(), 1)
-        for bond in atom.GetBonds()
-    )
+    return sum(_BOND_ORDER.get(bond.GetBondType(), 1) for bond in atom.GetBonds())
 
 
 def _assign_formal_charges(mol: RWMol) -> None:
@@ -194,7 +187,6 @@ def graph_to_smiles(graph: dict) -> str | None:
         except Exception as exc2:
             print(f"  [warn] graph_id={graph['graph_id']} sanitization failed: {exc2}")
             return None
-
 
 
 def main() -> None:

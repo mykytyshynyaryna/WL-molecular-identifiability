@@ -6,20 +6,20 @@ NCI1 differences from MUTAG
 * No edge_labels.txt — bond types are not stored.  All bonds are built as
   SINGLE and valence is satisfied through implicit hydrogens and (where
   necessary) formal charges on over-valent atoms.
-* Node labels are 1-indexed integers (1–37).  The TU Dortmund archive ships
+* Node labels are 1-indexed integers (1-37).  The TU Dortmund archive ships
   no mapping file; the table below is derived from frequency analysis of the
   122 747 atoms in the dataset and chemical constraints:
 
-    label 1  → O   (14.88 %, degree 1–2)
-    label 2  → N   (8.37 %,  degree 1–3; degree-4 atoms handled as N⁺)
-    label 3  → C   (73.56 %, degree 1–4)
-    label 4  → S   (1.04 %,  degree 1–4)
+    label 1  → O   (14.88 %, degree 1-2)
+    label 2  → N   (8.37 %,  degree 1-3; degree-4 atoms handled as N⁺)
+    label 3  → C   (73.56 %, degree 1-4)
+    label 4  → S   (1.04 %,  degree 1-4)
     label 5  → Cl  (1.02 %,  mostly degree 1)
     label 6  → Br  (0.10 %,  degree 1; degree-3/4 cases fall back to None)
     label 7  → F   (0.59 %,  all degree 1)
     label 8  → I   (0.02 %)
     label 9  → P   (0.06 %)
-    labels 10–37 → trace elements (Na, K, Li, Ca, Sn, Mg, Si, As, B, …)
+    labels 10-37 → trace elements (Na, K, Li, Ca, Sn, Mg, Si, As, B, …)
 
   Because bond orders are inferred from valence rules alone, the resulting
   SMILES represent the *topology* of each molecule exactly but may use a
@@ -40,6 +40,7 @@ Or with explicit paths:
         --data-dir data/raw/NCI1/NCI1 \\
         --out data/processed/NCI1/nci1_smiles.smi
 """
+
 from __future__ import annotations
 
 import argparse
@@ -50,20 +51,19 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT_DIR))
 
-from rdkit import Chem
-from rdkit.Chem import RWMol, SanitizeMol
-
+from rdkit import Chem  # noqa: E402
+from rdkit.Chem import RWMol, SanitizeMol  # noqa: E402
 
 ATOM_MAP: dict[int, str] = {
-    1:  "O",
-    2:  "N",
-    3:  "C",
-    4:  "S",
-    5:  "Cl",
-    6:  "Br",
-    7:  "F",
-    8:  "I",
-    9:  "P",
+    1: "O",
+    2: "N",
+    3: "C",
+    4: "S",
+    5: "Cl",
+    6: "Br",
+    7: "F",
+    8: "I",
+    9: "P",
     10: "Na",
     11: "K",
     12: "Li",
@@ -95,14 +95,44 @@ ATOM_MAP: dict[int, str] = {
 }
 
 _NORMAL_VALENCE: dict[str, int] = {
-    "C": 4, "N": 3, "O": 2, "S": 6, "F": 1, "Cl": 7, "Br": 7, "I": 7,
-    "P": 5, "Na": 1, "K": 1, "Li": 1, "Ca": 2, "Sn": 4, "Mg": 2,
-    "Si": 4, "As": 5, "B": 3, "Ge": 4, "Pb": 4, "Fe": 3, "Zn": 2,
-    "Cu": 2, "Mo": 6, "Co": 3, "Ag": 1, "Al": 3, "Ni": 3, "Sb": 5,
-    "Cr": 6, "Mn": 7, "Hg": 2, "Bi": 5, "Au": 3, "Ru": 8, "Tl": 3,
+    "C": 4,
+    "N": 3,
+    "O": 2,
+    "S": 6,
+    "F": 1,
+    "Cl": 7,
+    "Br": 7,
+    "I": 7,
+    "P": 5,
+    "Na": 1,
+    "K": 1,
+    "Li": 1,
+    "Ca": 2,
+    "Sn": 4,
+    "Mg": 2,
+    "Si": 4,
+    "As": 5,
+    "B": 3,
+    "Ge": 4,
+    "Pb": 4,
+    "Fe": 3,
+    "Zn": 2,
+    "Cu": 2,
+    "Mo": 6,
+    "Co": 3,
+    "Ag": 1,
+    "Al": 3,
+    "Ni": 3,
+    "Sb": 5,
+    "Cr": 6,
+    "Mn": 7,
+    "Hg": 2,
+    "Bi": 5,
+    "Au": 3,
+    "Ru": 8,
+    "Tl": 3,
     "Te": 6,
 }
-
 
 
 def _read_column(path: Path) -> list[int]:
@@ -120,17 +150,14 @@ def _read_edges(path: Path) -> list[tuple[int, int]]:
     return edges
 
 
-
 def parse_nci1(data_dir: Path) -> list[dict]:
     graph_indicator = _read_column(data_dir / "NCI1_graph_indicator.txt")
-    node_labels     = _read_column(data_dir / "NCI1_node_labels.txt")
-    graph_labels    = _read_column(data_dir / "NCI1_graph_labels.txt")
-    edges           = _read_edges(data_dir / "NCI1_A.txt")
+    node_labels = _read_column(data_dir / "NCI1_node_labels.txt")
+    graph_labels = _read_column(data_dir / "NCI1_graph_labels.txt")
+    edges = _read_edges(data_dir / "NCI1_A.txt")
 
     nodes_per_graph: dict[int, dict[int, str]] = defaultdict(dict)
-    for node_id, (graph_id, label_idx) in enumerate(
-        zip(graph_indicator, node_labels), start=1
-    ):
+    for node_id, (graph_id, label_idx) in enumerate(zip(graph_indicator, node_labels, strict=True), start=1):
         nodes_per_graph[graph_id][node_id] = ATOM_MAP[label_idx]
 
     edges_per_graph: dict[int, list[tuple[int, int]]] = defaultdict(list)
@@ -144,13 +171,12 @@ def parse_nci1(data_dir: Path) -> list[dict]:
         graphs.append(
             {
                 "graph_id": graph_id,
-                "label":    label,
-                "nodes":    nodes_per_graph[graph_id],
-                "edges":    edges_per_graph[graph_id],
+                "label": label,
+                "nodes": nodes_per_graph[graph_id],
+                "edges": edges_per_graph[graph_id],
             }
         )
     return graphs
-
 
 
 def _assign_formal_charges(mol: RWMol) -> None:
@@ -169,11 +195,8 @@ def _assign_formal_charges(mol: RWMol) -> None:
         normal = _NORMAL_VALENCE.get(sym)
         if normal is None or degree <= normal:
             continue
-        if sym == "N" and degree == 4:
+        if (sym == "N" and degree == 4) or (sym == "S" and degree in (3, 4)):
             atom.SetFormalCharge(1)
-        elif sym == "S" and degree in (3, 4):
-            atom.SetFormalCharge(1)
-
 
 
 def graph_to_smiles(graph: dict) -> str | None:
@@ -217,14 +240,10 @@ def graph_to_smiles(graph: dict) -> str | None:
             return None
 
     if Chem.MolFromSmiles(smiles) is None:
-        print(
-            f"  [warn] graph_id={graph['graph_id']} SMILES failed round-trip "
-            f"(over-valent atom): {smiles}"
-        )
+        print(f"  [warn] graph_id={graph['graph_id']} SMILES failed round-trip (over-valent atom): {smiles}")
         return None
 
     return smiles
-
 
 
 def main() -> None:

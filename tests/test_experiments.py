@@ -5,23 +5,18 @@ import polars as pl
 import pytest
 
 from wl_identifiability.experiments import (
-    estimate_global_wl_steps,
-    _compute_wl_summary,
-    _compute_flip_graph_summary,
     _compute_color_ratio,
+    _compute_flip_graph_summary,
+    _compute_wl_summary,
     analyze_single_molecule,
+    estimate_global_wl_steps,
     run_molecule_analysis_pipeline,
 )
-
-
-
 
 
 def _make_wl_result(n_labels=3, converged=True, iterations=2):
     labels = {i: i % n_labels for i in range(6)}
     return {"labels": labels, "converged": converged, "iterations": iterations}
-
-
 
 
 class TestEstimateGlobalWlSteps:
@@ -36,20 +31,14 @@ class TestEstimateGlobalWlSteps:
         assert result["all_iters"] == []
 
     def test_k_max_is_int(self):
-        assert isinstance(
-            estimate_global_wl_steps([nx.path_graph(6)], cap=20)["K_max"], int
-        )
+        assert isinstance(estimate_global_wl_steps([nx.path_graph(6)], cap=20)["K_max"], int)
 
     def test_cap_respected(self):
         assert estimate_global_wl_steps([nx.path_graph(30)], cap=3)["K_max"] <= 3
 
     def test_k_p95_lte_k_max(self):
-        result = estimate_global_wl_steps(
-            [nx.path_graph(i) for i in range(3, 10)], cap=20
-        )
+        result = estimate_global_wl_steps([nx.path_graph(i) for i in range(3, 10)], cap=20)
         assert result["K_p95"] <= result["K_max"]
-
-
 
 
 class TestComputeWlSummary:
@@ -67,8 +56,6 @@ class TestComputeWlSummary:
     def test_empty_labels_gives_zero_colors(self):
         wl = {"labels": {}, "converged": True, "iterations": 0}
         assert _compute_wl_summary(wl, "top")["n_colors_top"] == 0
-
-
 
 
 class TestComputeFlipGraphSummary:
@@ -104,26 +91,17 @@ class TestComputeFlipGraphSummary:
         assert _compute_flip_graph_summary({})["n_flipped_edges"] == 0
 
 
-
-
 class TestComputeColorRatio:
     @pytest.mark.parametrize(
         "top_labels,atom_labels,expected",
         [
-            pytest.param(
-                {0: 0, 1: 0, 2: 0}, {0: 0, 1: 1, 2: 2}, pytest.approx(3.0), id="ratio_3"
-            ),
+            pytest.param({0: 0, 1: 0, 2: 0}, {0: 0, 1: 1, 2: 2}, pytest.approx(3.0), id="ratio_3"),
             pytest.param({0: 0, 1: 1}, {0: 0, 1: 1}, pytest.approx(1.0), id="equal"),
             pytest.param({}, {0: 0}, None, id="zero_top"),
         ],
     )
     def test_color_ratio(self, top_labels, atom_labels, expected):
-        assert (
-            _compute_color_ratio({"labels": top_labels}, {"labels": atom_labels})
-            == expected
-        )
-
-
+        assert _compute_color_ratio({"labels": top_labels}, {"labels": atom_labels}) == expected
 
 
 class TestAnalyzeSingleMolecule:
@@ -148,9 +126,7 @@ class TestAnalyzeSingleMolecule:
         assert "ok" in analyze_single_molecule(valid_smiles, "z1", fixed_wl_steps=0)
 
     def test_larger_molecule(self):
-        result = analyze_single_molecule(
-            "CC(=O)Oc1ccccc1C(=O)O", "zinc_asp", fixed_wl_steps=5
-        )
+        result = analyze_single_molecule("CC(=O)Oc1ccccc1C(=O)O", "zinc_asp", fixed_wl_steps=5)
         assert result["ok"] is True
 
     @pytest.mark.parametrize(
@@ -159,9 +135,7 @@ class TestAnalyzeSingleMolecule:
             pytest.param("CCO", "ZINC123", "ZINC123", "CCO", id="ethanol"),
         ],
     )
-    def test_result_identity_fields(
-        self, smiles, zinc_id, expected_id, expected_smiles
-    ):
+    def test_result_identity_fields(self, smiles, zinc_id, expected_id, expected_smiles):
         result = analyze_single_molecule(smiles, zinc_id, fixed_wl_steps=3)
         assert result["zinc_id"] == expected_id
         assert result["smiles"] == expected_smiles
@@ -185,8 +159,6 @@ class TestAnalyzeSingleMolecule:
     def test_valid_result_has_field(self, field, valid_smiles):
         result = analyze_single_molecule(valid_smiles, "z1", fixed_wl_steps=3)
         assert field in result
-
-
 
 
 class TestRunMoleculeAnalysisPipeline:
@@ -221,9 +193,7 @@ class TestRunMoleculeAnalysisPipeline:
 
     @pytest.mark.parametrize("n_rows", [1, 2, 3])
     def test_result_df_has_one_row_per_input(self, n_rows, valid_smiles):
-        df = self._df(
-            [{"smiles": valid_smiles, "zinc_id": f"z{i}"} for i in range(n_rows)]
-        )
+        df = self._df([{"smiles": valid_smiles, "zinc_id": f"z{i}"} for i in range(n_rows)])
         result_df, _ = run_molecule_analysis_pipeline(df, fixed_wl_steps=3)
         assert len(result_df) == n_rows
 

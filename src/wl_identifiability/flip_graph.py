@@ -1,24 +1,26 @@
 from __future__ import annotations
 
-from ._imports import nx
+from typing import Any
+
+import networkx as nx
 
 
-def _group_nodes_by_color(labels: dict) -> dict:
+def _group_nodes_by_color(labels: dict[Any, Any]) -> dict[Any, list[Any]]:
     """Invert the labels dict, grouping node IDs by their WL color integer."""
-    color2nodes: dict = {}
+    color2nodes: dict[Any, list[Any]] = {}
     for v, c in labels.items():
         color2nodes.setdefault(c, []).append(v)
     return color2nodes
 
 
-def build_flip_graph_from_labels(G: nx.Graph, labels: dict) -> tuple[nx.Graph, dict]:
+def build_flip_graph_from_labels(G: nx.Graph, labels: dict[Any, Any]) -> tuple[nx.Graph, dict[str, int]]:
     """Construct the flip graph from the original graph and WL node labels."""
     color2nodes = _group_nodes_by_color(labels)
     colors = list(color2nodes.keys())
 
     nodes = list(G.nodes())
-    info = {"within_copy": 0, "within_flip": 0, "between_copy": 0, "between_flip": 0}
-    edges: list[tuple] = []
+    info: dict[str, int] = {"within_copy": 0, "within_flip": 0, "between_copy": 0, "between_flip": 0}
+    edges: list[tuple[Any, Any]] = []
 
     for c in colors:
         Ci = color2nodes[c]

@@ -3,22 +3,20 @@
 import networkx as nx
 import pytest
 
-from wl_identifiability.wl import (
-    normalize_node_labels,
-    compute_label_histogram,
-    compute_wl_coloring,
-)
 from wl_identifiability.visualization import (
+    _build_color_palette,
     _group_nodes_by_label,
     _sort_color_class_keys,
-    _build_color_palette,
+)
+from wl_identifiability.wl import (
+    compute_label_histogram,
+    compute_wl_coloring,
+    normalize_node_labels,
 )
 
 
 def _wl_result(G, **kwargs):
     return compute_wl_coloring(G, **kwargs)
-
-
 
 
 class TestNormalizeNodeLabels:
@@ -41,26 +39,16 @@ class TestNormalizeNodeLabels:
     @pytest.mark.parametrize(
         "labels,exc_type,match",
         [
-            pytest.param(
-                {0: "A", 1: "B"}, ValueError, "Missing labels", id="missing_node"
-            ),
-            pytest.param(
-                {0: "A", 1: "B", 99: "X"}, ValueError, "not in graph", id="extra_node"
-            ),
+            pytest.param({0: "A", 1: "B"}, ValueError, "Missing labels", id="missing_node"),
+            pytest.param({0: "A", 1: "B", 99: "X"}, ValueError, "not in graph", id="extra_node"),
             pytest.param("bad_input", TypeError, None, id="wrong_type"),
             pytest.param([], ValueError, None, id="empty_history"),
         ],
     )
     def test_raises(self, labels, exc_type, match):
-        G = (
-            nx.path_graph(3)
-            if isinstance(labels, dict) and len(labels) == 2
-            else nx.path_graph(2)
-        )
+        G = nx.path_graph(3) if isinstance(labels, dict) and len(labels) == 2 else nx.path_graph(2)
         with pytest.raises(exc_type, match=match):
             normalize_node_labels(G, labels)
-
-
 
 
 class TestComputeLabelHistogram:
@@ -104,8 +92,6 @@ class TestComputeLabelHistogram:
         assert "histogram" in compute_label_histogram(self.G, self.wl, sort_by="label")
 
 
-
-
 class TestGroupNodesByLabel:
     def test_returns_dict(self):
         G = nx.path_graph(4)
@@ -120,9 +106,7 @@ class TestGroupNodesByLabel:
         G = nx.complete_graph(5)
         groups = _group_nodes_by_label(G, _wl_result(G))
         assert len(groups) == 1
-        assert len(list(groups.values())[0]) == 5
-
-
+        assert len(next(iter(groups.values()))) == 5
 
 
 class TestSortColorClassKeys:
@@ -135,8 +119,6 @@ class TestSortColorClassKeys:
     def test_deterministic(self):
         classes = {3: [], 1: [], 2: []}
         assert _sort_color_class_keys(classes) == _sort_color_class_keys(classes)
-
-
 
 
 class TestBuildColorPalette:

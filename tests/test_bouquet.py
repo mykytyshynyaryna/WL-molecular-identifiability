@@ -11,19 +11,17 @@ import networkx as nx
 import pytest
 
 from wl_identifiability.bouquet import (
-    _is_valid_tree_structure,
-    _find_unique_induced_c5_cycle,
-    _compute_tree_wl_signature,
     _are_all_petals_isomorphic,
-    _split_bouquet_component_into_petals,
     _compute_bouquet_signature,
-    check_bouquet_component,
+    _compute_tree_wl_signature,
+    _find_unique_induced_c5_cycle,
+    _is_valid_tree_structure,
+    _split_bouquet_component_into_petals,
     analyze_bouquet_forest_structure,
+    check_bouquet_component,
     is_bouquet_component,
     rooted_tree_signature,
 )
-
-
 
 
 def _disconnected_graph() -> nx.Graph:
@@ -90,8 +88,6 @@ def _disjoint_union(G1: nx.Graph, G2: nx.Graph) -> nx.Graph:
     return nx.compose(G1, G2r)
 
 
-
-
 class TestIsValidTreeStructure:
     @pytest.mark.parametrize(
         "G",
@@ -122,8 +118,6 @@ class TestIsValidTreeStructure:
         assert not _is_valid_tree_structure(G)
 
 
-
-
 class TestFindUniqueInducedC5Cycle:
     def test_c5_found(self):
         cyc = _find_unique_induced_c5_cycle(nx.cycle_graph(5))
@@ -145,8 +139,6 @@ class TestFindUniqueInducedC5Cycle:
         assert _find_unique_induced_c5_cycle(G) is None
 
 
-
-
 class TestComputeTreeWlSignature:
     def test_returns_string(self):
         assert isinstance(_compute_tree_wl_signature(nx.path_graph(4)), str)
@@ -156,17 +148,11 @@ class TestComputeTreeWlSignature:
         assert _compute_tree_wl_signature(T) == _compute_tree_wl_signature(T)
 
     def test_different_trees_different_signatures(self):
-        assert _compute_tree_wl_signature(
-            nx.path_graph(5)
-        ) != _compute_tree_wl_signature(nx.star_graph(4))
+        assert _compute_tree_wl_signature(nx.path_graph(5)) != _compute_tree_wl_signature(nx.star_graph(4))
 
     @pytest.mark.parametrize("n", [3, 5, 7])
     def test_isomorphic_paths_same_signature(self, n):
-        assert _compute_tree_wl_signature(
-            nx.path_graph(n)
-        ) == _compute_tree_wl_signature(nx.path_graph(n))
-
-
+        assert _compute_tree_wl_signature(nx.path_graph(n)) == _compute_tree_wl_signature(nx.path_graph(n))
 
 
 class TestArePetalsIsomorphic:
@@ -193,7 +179,7 @@ class TestArePetalsIsomorphic:
     def test_with_labels_identical_colors_accepted(self):
         """Uniform bouquet: all petals have identical node colors → isomorphic."""
         G = _build_uniform_bouquet(1)
-        labels = {v: 0 for v in G.nodes()}
+        labels = dict.fromkeys(G.nodes(), 0)
         petals = self._get_petals(G)
         assert _are_all_petals_isomorphic(petals, labels=labels) is True
 
@@ -203,8 +189,6 @@ class TestArePetalsIsomorphic:
         labels = {v: v for v in G.nodes()}
         petals = self._get_petals(G)
         assert _are_all_petals_isomorphic(petals, labels=labels) is False
-
-
 
 
 class TestCheckBouquetComponent:
@@ -249,7 +233,10 @@ class TestCheckBouquetComponent:
         petals is rejected as a bouquet. Previously this check was computed but
         the result was not used — now it gates the return value.
         """
-        assert check_bouquet_component(_build_mixed_bouquet([1, 1, 2, 2, 2])) == (False, None)
+        assert check_bouquet_component(_build_mixed_bouquet([1, 1, 2, 2, 2])) == (
+            False,
+            None,
+        )
 
     def test_uniform_depth_accepted_without_labels(self):
         ok, info = check_bouquet_component(_build_uniform_bouquet(1))
@@ -259,8 +246,8 @@ class TestCheckBouquetComponent:
     def test_uniform_depth_accepted_with_consistent_labels(self):
         """Same structure, all nodes same color → accepted as colored bouquet."""
         G = _build_uniform_bouquet(1)
-        labels = {v: 0 for v in G.nodes()}
-        ok, info = check_bouquet_component(G, labels=labels)
+        labels = dict.fromkeys(G.nodes(), 0)
+        ok, _info = check_bouquet_component(G, labels=labels)
         assert ok is True
 
     def test_uniform_structure_rejected_with_unique_labels(self):
@@ -268,8 +255,6 @@ class TestCheckBouquetComponent:
         G = _build_uniform_bouquet(1)
         labels = {v: v for v in G.nodes()}
         assert check_bouquet_component(G, labels=labels) == (False, None)
-
-
 
 
 class TestBouquetSignatureIsomorphism:
@@ -311,19 +296,13 @@ class TestBouquetSignatureIsomorphism:
     def test_with_labels_same_colors_same_signature(self):
         B1 = _build_uniform_bouquet(1)
         B2 = _build_uniform_bouquet(1)
-        labels1 = {v: 0 for v in B1.nodes()}
-        labels2 = {v: 0 for v in B2.nodes()}
-        assert _compute_bouquet_signature(B1, labels=labels1) == _compute_bouquet_signature(
-            B2, labels=labels2
-        )
-
-
+        labels1 = dict.fromkeys(B1.nodes(), 0)
+        labels2 = dict.fromkeys(B2.nodes(), 0)
+        assert _compute_bouquet_signature(B1, labels=labels1) == _compute_bouquet_signature(B2, labels=labels2)
 
 
 class TestAnalyzeBouquetForestStructure:
-    @pytest.mark.parametrize(
-        "key", ["is_bouquet_forest", "bouquets", "non_identifiable", "reason"]
-    )
+    @pytest.mark.parametrize("key", ["is_bouquet_forest", "bouquets", "non_identifiable", "reason"])
     def test_result_has_expected_keys(self, key):
         result = analyze_bouquet_forest_structure(nx.path_graph(4))
         assert key in result
@@ -423,11 +402,9 @@ class TestBouquetForestNonIdentifiability:
 
     def test_labels_passed_through(self, bouquet_graph):
         """analyze_bouquet_forest_structure accepts labels kwarg without error."""
-        labels = {v: 0 for v in bouquet_graph.nodes()}
+        labels = dict.fromkeys(bouquet_graph.nodes(), 0)
         result = analyze_bouquet_forest_structure(bouquet_graph, labels=labels)
         assert result["is_bouquet_forest"] is True
-
-
 
 
 class TestRootedTreeSignature:
@@ -460,10 +437,16 @@ class TestRootedTreeSignature:
         assert rooted_tree_signature(path, 0) != rooted_tree_signature(star, 0)
 
 
-
 _EXPECTED_KEYS = frozenset(
-    {"is_bouquet", "method", "reason", "cycle_nodes", "cycle_length",
-     "n_rooted_trees", "tree_signatures"}
+    {
+        "is_bouquet",
+        "method",
+        "reason",
+        "cycle_nodes",
+        "cycle_length",
+        "n_rooted_trees",
+        "tree_signatures",
+    }
 )
 
 
@@ -525,7 +508,7 @@ class TestIsBouquetComponent:
 
     def test_uniform_colors_accepted(self):
         G = _build_uniform_bouquet(1)
-        labels = {v: 0 for v in G.nodes()}
+        labels = dict.fromkeys(G.nodes(), 0)
         result = is_bouquet_component(G, labels=labels)
         assert result["is_bouquet"] is True
 
@@ -534,8 +517,6 @@ class TestIsBouquetComponent:
         labels = {v: v for v in G.nodes()}
         result = is_bouquet_component(G, labels=labels)
         assert result["is_bouquet"] is False
-
-
 
 
 class TestIsBouquetComponentCoverage:
@@ -555,9 +536,7 @@ class TestIsBouquetComponentCoverage:
         assert is_bouquet_component(_c5_with_chord())["is_bouquet"] is False
 
     def test_non_isomorphic_petals_rejected(self):
-        assert is_bouquet_component(
-            _build_mixed_bouquet([1, 1, 2, 2, 2])
-        )["is_bouquet"] is False
+        assert is_bouquet_component(_build_mixed_bouquet([1, 1, 2, 2, 2]))["is_bouquet"] is False
 
     def test_method_field_value(self):
         result = is_bouquet_component(_build_uniform_bouquet(1))

@@ -1,7 +1,7 @@
 """Tests for graph_construction.py — RDKit molecule → NetworkX graph."""
 
-import pytest
 import networkx as nx
+import pytest
 from rdkit import Chem
 
 from wl_identifiability.graph_construction import convert_rdkit_molecule_to_nx_graph

@@ -28,6 +28,7 @@ The original NCI109 compound-set SDF files were distributed by the NCI DTP progr
 Usage:
     python scripts/download/download_nci109.py
 """
+
 from __future__ import annotations
 
 import sys
@@ -40,7 +41,6 @@ SOURCE_URL = "https://www.chrsmrrs.com/graphkerneldatasets/NCI109.zip"
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
 TARGET_DIR = ROOT_DIR / "data" / "raw" / DATASET_NAME
-
 
 
 def download_file(url: str, dest: Path) -> None:
@@ -69,7 +69,6 @@ def extract_zip(archive: Path, target_dir: Path) -> None:
         zf.extractall(target_dir)
     n_files = sum(1 for _ in target_dir.rglob("*") if _.is_file())
     print(f"[OK] Extracted {n_files} file(s)")
-
 
 
 def main() -> int:

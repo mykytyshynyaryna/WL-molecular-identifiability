@@ -31,6 +31,7 @@ and keeping only the first (SMILES) column.
 Usage:
     python scripts/download/download_zinc.py
 """
+
 from __future__ import annotations
 
 import csv
@@ -50,7 +51,6 @@ SOURCE_URL = (
 ROOT_DIR = Path(__file__).resolve().parents[3]
 TARGET_DIR = ROOT_DIR / "data" / "raw" / DATASET_NAME
 SMI_FILE = TARGET_DIR / "zinc250k.smi"
-
 
 
 def download_csv_as_bytes(url: str) -> bytes:
@@ -74,9 +74,8 @@ def csv_bytes_to_smi(data: bytes) -> str:
 
     smiles_lines = []
     for i, row in enumerate(reader):
-        if i == 0:
-            if row and not _looks_like_smiles(row[0]):
-                continue
+        if i == 0 and row and not _looks_like_smiles(row[0]):
+            continue
         if row:
             smiles_lines.append(row[0].strip())
 
@@ -95,7 +94,6 @@ def save_smi(content: str, dest: Path) -> None:
     print(f"[OK] Wrote {n_lines} SMILES to {dest}")
 
 
-
 def main() -> int:
     """Download the ZINC250k CSV and convert it to a .smi file."""
     print(f"=== Downloading {DATASET_NAME} (250k subset) ===")
@@ -111,9 +109,7 @@ def main() -> int:
         raw_bytes = download_csv_as_bytes(SOURCE_URL)
     except Exception as exc:
         print(f"[ERROR] Download failed: {exc}")
-        print(
-            "[HINT] Check your internet connection or update SOURCE_URL in this script."
-        )
+        print("[HINT] Check your internet connection or update SOURCE_URL in this script.")
         return 1
 
     print("[CONVERT] CSV -> .smi")

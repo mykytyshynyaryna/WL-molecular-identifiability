@@ -6,9 +6,8 @@ alongside their fixture counterparts so that @pytest.mark.parametrize
 decorators can reference them directly without needing an import.
 """
 
-import pytest
 import networkx as nx
-
+import pytest
 
 VALID_SMILES = "CCO"
 INVALID_SMILES = "not_smiles"
@@ -26,13 +25,11 @@ def invalid_smiles() -> str:
     return INVALID_SMILES
 
 
-
-
 @pytest.fixture
 def bouquet_graph() -> nx.Graph:
     """
-    Standard test bouquet: C₅ (nodes 0–4) with one pendant leaf per cycle
-    node (nodes 5–9). All five petals are isomorphic single-edge trees.
+    Standard test bouquet: C₅ (nodes 0-4) with one pendant leaf per cycle
+    node (nodes 5-9). All five petals are isomorphic single-edge trees.
     """
     G = nx.cycle_graph(5)
     for i in range(5):
