@@ -246,7 +246,9 @@ Get-ChildItem data\raw\ZINC20\*.smi | ForEach-Object {
 
 Each tranche produces its own SQLite database in `results/` (e.g. `results/AAAA.db`) and appends one summary row to the shared `results/summary.csv`.
 
-**To test on a single tranche first:**
+**Run on a single `.smi` file**
+
+To process one specific tranche, run:
 
 ```bash
 python examples/run_pipeline.py --data data/raw/ZINC20/AAAA.smi --workers 4
