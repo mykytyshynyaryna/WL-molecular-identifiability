@@ -1,4 +1,4 @@
-smiles zinc_id
+smiles id
 O=[N+]([O-])c1ccc2c(ccc3ccccc32)c1 1
 O=[N+]([O-])c1cccc2cccnc12 2
 O=[N+]([O-])c1cccc2ncccc12 3

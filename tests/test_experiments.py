@@ -137,7 +137,7 @@ class TestAnalyzeSingleMolecule:
     )
     def test_result_identity_fields(self, smiles, zinc_id, expected_id, expected_smiles):
         result = analyze_single_molecule(smiles, zinc_id, fixed_wl_steps=3)
-        assert result["zinc_id"] == expected_id
+        assert result["molecule_id"] == expected_id
         assert result["smiles"] == expected_smiles
 
     @pytest.mark.parametrize(
@@ -166,7 +166,7 @@ class TestRunMoleculeAnalysisPipeline:
         return pl.DataFrame(rows)
 
     def test_returns_dataframe_and_bad_count(self, valid_smiles):
-        df = self._df([{"smiles": valid_smiles, "zinc_id": "z1"}])
+        df = self._df([{"smiles": valid_smiles, "molecule_id": "z1"}])
         result_df, bad = run_molecule_analysis_pipeline(df, fixed_wl_steps=3)
         assert isinstance(result_df, pl.DataFrame)
         assert isinstance(bad, int)
@@ -174,8 +174,8 @@ class TestRunMoleculeAnalysisPipeline:
     def test_bad_count_zero_for_valid_molecules(self, valid_smiles):
         df = self._df(
             [
-                {"smiles": valid_smiles, "zinc_id": "z1"},
-                {"smiles": "C", "zinc_id": "z2"},
+                {"smiles": valid_smiles, "molecule_id": "z1"},
+                {"smiles": "C", "molecule_id": "z2"},
             ]
         )
         _, bad = run_molecule_analysis_pipeline(df, fixed_wl_steps=3)
@@ -184,8 +184,8 @@ class TestRunMoleculeAnalysisPipeline:
     def test_bad_count_increments_for_invalid_smiles(self, valid_smiles, invalid_smiles):
         df = self._df(
             [
-                {"smiles": valid_smiles, "zinc_id": "z1"},
-                {"smiles": invalid_smiles, "zinc_id": "z2"},
+                {"smiles": valid_smiles, "molecule_id": "z1"},
+                {"smiles": invalid_smiles, "molecule_id": "z2"},
             ]
         )
         _, bad = run_molecule_analysis_pipeline(df, fixed_wl_steps=3)
@@ -193,11 +193,11 @@ class TestRunMoleculeAnalysisPipeline:
 
     @pytest.mark.parametrize("n_rows", [1, 2, 3])
     def test_result_df_has_one_row_per_input(self, n_rows, valid_smiles):
-        df = self._df([{"smiles": valid_smiles, "zinc_id": f"z{i}"} for i in range(n_rows)])
+        df = self._df([{"smiles": valid_smiles, "molecule_id": f"z{i}"} for i in range(n_rows)])
         result_df, _ = run_molecule_analysis_pipeline(df, fixed_wl_steps=3)
         assert len(result_df) == n_rows
 
     def test_result_df_contains_ok_column(self, valid_smiles):
-        df = self._df([{"smiles": valid_smiles, "zinc_id": "z1"}])
+        df = self._df([{"smiles": valid_smiles, "molecule_id": "z1"}])
         result_df, _ = run_molecule_analysis_pipeline(df, fixed_wl_steps=3)
         assert "ok" in result_df.columns

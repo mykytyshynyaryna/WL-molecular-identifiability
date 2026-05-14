@@ -184,7 +184,7 @@ python scripts/download/download_data/download_zinc_from_uri.py \
 
 ## 3. Parse datasets to SMILES
 
-The pipeline reads `.smi` files (space-separated SMILES with an ID column). ZINC is already in this format. MUTAG, NCI1, and NCI109 are in TU Dortmund graph format and need to be converted first.
+The pipeline reads `.smi` files (space-separated, two columns with a header). ZINC/ZINC20 files use the header `smiles zinc_id`; benchmark datasets (MUTAG, NCI1, NCI109) use `smiles id`. The pipeline detects either column name automatically and stores the identifier as `molecule_id` in the database. MUTAG, NCI1, and NCI109 are in TU Dortmund graph format and need to be converted first; ZINC files are already in the correct format.
 
 ```bash
 python scripts/download/parsing_data/parse_mutag_to_smiles.py

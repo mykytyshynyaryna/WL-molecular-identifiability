@@ -241,7 +241,7 @@ def insert_row(conn: sqlite3.Connection, row: dict, dataset_name: str = "") -> N
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
-            str(row.get("zinc_id", "")),
+            str(row.get("molecule_id", "")),
             dataset_name,
             str(row.get("smiles", "")),
             row.get("n_nodes"),

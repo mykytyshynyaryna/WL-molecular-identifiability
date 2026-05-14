@@ -140,15 +140,15 @@ def _compute_skeleton_summary(
     }
 
 
-def analyze_single_molecule(smiles: str, zinc_id: str, fixed_wl_steps: int) -> dict[str, Any]:
+def analyze_single_molecule(smiles: str, molecule_id: str, fixed_wl_steps: int) -> dict[str, Any]:
     """
     Run the full identifiability analysis pipeline for a single molecule.
     """
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
-        print(f"[WARN] parse failed: zinc_id={zinc_id} smiles={smiles}", file=sys.stderr)
+        print(f"[WARN] parse failed: molecule_id={molecule_id} smiles={smiles}", file=sys.stderr)
         return {
-            "zinc_id": zinc_id,
+            "molecule_id": molecule_id,
             "smiles": smiles,
             "ok": False,
             "stage": "parse",
@@ -165,11 +165,11 @@ def analyze_single_molecule(smiles: str, zinc_id: str, fixed_wl_steps: int) -> d
 
     except Exception as error:
         print(
-            f"[WARN] wl failed: zinc_id={zinc_id}  {type(error).__name__}: {error}",
+            f"[WARN] wl failed: molecule_id={molecule_id}  {type(error).__name__}: {error}",
             file=sys.stderr,
         )
         return {
-            "zinc_id": zinc_id,
+            "molecule_id": molecule_id,
             "smiles": smiles,
             "ok": False,
             "stage": "wl",
@@ -190,11 +190,11 @@ def analyze_single_molecule(smiles: str, zinc_id: str, fixed_wl_steps: int) -> d
 
     except Exception as error:
         print(
-            f"[WARN] flip_graph failed: zinc_id={zinc_id}  {type(error).__name__}: {error}",
+            f"[WARN] flip_graph failed: molecule_id={molecule_id}  {type(error).__name__}: {error}",
             file=sys.stderr,
         )
         return {
-            "zinc_id": zinc_id,
+            "molecule_id": molecule_id,
             "smiles": smiles,
             "ok": False,
             "stage": "flip_graph",
@@ -214,11 +214,11 @@ def analyze_single_molecule(smiles: str, zinc_id: str, fixed_wl_steps: int) -> d
 
     except Exception as error:
         print(
-            f"[WARN] skeleton failed: zinc_id={zinc_id}  {type(error).__name__}: {error}",
+            f"[WARN] skeleton failed: molecule_id={molecule_id}  {type(error).__name__}: {error}",
             file=sys.stderr,
         )
         return {
-            "zinc_id": zinc_id,
+            "molecule_id": molecule_id,
             "smiles": smiles,
             "ok": False,
             "stage": "skeleton",
@@ -235,7 +235,7 @@ def analyze_single_molecule(smiles: str, zinc_id: str, fixed_wl_steps: int) -> d
             return analyze_bouquet_forest_structure(flip_graph, labels=labels)
         except Exception as error:
             print(
-                f"[WARN] bouquet_forest({mode_tag}) failed: zinc_id={zinc_id}  {type(error).__name__}: {error}",
+                f"[WARN] bouquet_forest({mode_tag}) failed: molecule_id={molecule_id}  {type(error).__name__}: {error}",
                 file=sys.stderr,
             )
             return {
@@ -251,7 +251,7 @@ def analyze_single_molecule(smiles: str, zinc_id: str, fixed_wl_steps: int) -> d
         return int(v) if v is not None else None
 
     return {
-        "zinc_id": zinc_id,
+        "molecule_id": molecule_id,
         "smiles": smiles,
         "ok": True,
         "stage": "done",
@@ -275,8 +275,8 @@ def analyze_single_molecule(smiles: str, zinc_id: str, fixed_wl_steps: int) -> d
 
 def _worker_task(args: tuple[str, str, int]) -> dict[str, Any]:
     """Unpacks args and calls analyze_single_molecule. Must be top-level for pickling."""
-    smiles, zinc_id, fixed_wl_steps = args
-    return analyze_single_molecule(smiles=smiles, zinc_id=zinc_id, fixed_wl_steps=fixed_wl_steps)
+    smiles, molecule_id, fixed_wl_steps = args
+    return analyze_single_molecule(smiles=smiles, molecule_id=molecule_id, fixed_wl_steps=fixed_wl_steps)
 
 
 def run_molecule_analysis_pipeline(
@@ -291,8 +291,8 @@ def run_molecule_analysis_pipeline(
     SQLite persistence is the responsibility of the calling script.
     """
     tasks = [
-        (smiles, zinc_id, fixed_wl_steps)
-        for smiles, zinc_id in zip(df["smiles"].to_list(), df["zinc_id"].to_list(), strict=True)
+        (smiles, molecule_id, fixed_wl_steps)
+        for smiles, molecule_id in zip(df["smiles"].to_list(), df["molecule_id"].to_list(), strict=True)
     ]
 
     rows: list[dict[str, Any]] = []

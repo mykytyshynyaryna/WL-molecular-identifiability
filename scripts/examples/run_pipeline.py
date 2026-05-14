@@ -28,12 +28,14 @@ DEFAULT_SUMMARY_CSV = DEFAULT_RESULTS_DIR / "summary.csv"
 
 
 def load_dataset(path: str) -> pl.DataFrame:
-    df = pl.read_csv(
-        path,
-        separator=" ",
-        has_header=True,
-        columns=["smiles", "zinc_id"],
-    ).with_columns(pl.col("zinc_id").cast(pl.Utf8))
+    df = pl.read_csv(path, separator=" ", has_header=True)
+    if "zinc_id" in df.columns:
+        df = df.select(["smiles", "zinc_id"]).rename({"zinc_id": "molecule_id"})
+    elif "id" in df.columns:
+        df = df.select(["smiles", "id"]).rename({"id": "molecule_id"})
+    else:
+        raise ValueError(f"No 'id' or 'zinc_id' column found in {path}")
+    df = df.with_columns(pl.col("molecule_id").cast(pl.Utf8))
     print(f"  Loaded {len(df):,} rows from {path}")
     return df
 

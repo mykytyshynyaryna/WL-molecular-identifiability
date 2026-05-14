@@ -28,8 +28,8 @@ NCI109 differences from MUTAG
 
 Output: data/processed/NCI109/nci109_smiles.smi
   Plain-text, space-separated, two columns:
-      smiles zinc_id
-  where zinc_id is the 1-based graph index from the TU dataset.
+      smiles id
+  where id is the 1-based graph index from the TU dataset.
   Encoding: UTF-8, Unix line endings.
 
 How to run (from the project root):
@@ -279,7 +279,7 @@ def main() -> None:
         "--out",
         type=Path,
         default=ROOT_DIR / "data" / "processed" / "NCI109" / "nci109_smiles.smi",
-        help="Output .smi path (space-separated: smiles zinc_id)",
+        help="Output .smi path (space-separated: smiles id)",
     )
     args = parser.parse_args()
 
@@ -305,16 +305,16 @@ def main() -> None:
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w", encoding="utf-8", newline="\n") as f:
-        f.write("smiles zinc_id\n")
-        for smiles, zinc_id in rows:
-            f.write(f"{smiles} {zinc_id}\n")
+        f.write("smiles id\n")
+        for smiles, mol_id in rows:
+            f.write(f"{smiles} {mol_id}\n")
 
     print(f"Saved to: {out_path}")
 
     print("\nSample (first 5 rows):")
-    print("  smiles zinc_id")
-    for smiles, zinc_id in rows[:5]:
-        print(f"  {smiles} {zinc_id}")
+    print("  smiles id")
+    for smiles, mol_id in rows[:5]:
+        print(f"  {smiles} {mol_id}")
 
 
 if __name__ == "__main__":

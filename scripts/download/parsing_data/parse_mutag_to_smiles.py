@@ -9,8 +9,8 @@ Edge labels (bond types):
 
 Output: data/processed/MUTAG/mutag_smiles.smi
   A plain-text, space-separated file with exactly two columns:
-      smiles zinc_id
-  where zinc_id is the graph index (1-based) from the TU dataset.
+      smiles id
+  where id is the graph index (1-based) from the TU dataset.
   Rows with invalid or missing SMILES are silently skipped.
   Encoding: UTF-8, Unix line endings.
 
@@ -201,7 +201,7 @@ def main() -> None:
         "--out",
         type=Path,
         default=ROOT_DIR / "data" / "processed" / "MUTAG" / "mutag_smiles.smi",
-        help="Output .smi path (space-separated: smiles zinc_id)",
+        help="Output .smi path (space-separated: smiles id)",
     )
     args = parser.parse_args()
 
@@ -225,16 +225,16 @@ def main() -> None:
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w", encoding="utf-8", newline="\n") as f:
-        f.write("smiles zinc_id\n")
-        for smiles, zinc_id in rows:
-            f.write(f"{smiles} {zinc_id}\n")
+        f.write("smiles id\n")
+        for smiles, mol_id in rows:
+            f.write(f"{smiles} {mol_id}\n")
 
     print(f"Saved to: {out_path}")
 
     print("\nSample (first 5 rows):")
-    print("  smiles zinc_id")
-    for smiles, zinc_id in rows[:5]:
-        print(f"  {smiles} {zinc_id}")
+    print("  smiles id")
+    for smiles, mol_id in rows[:5]:
+        print(f"  {smiles} {mol_id}")
 
 
 if __name__ == "__main__":
