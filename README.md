@@ -67,7 +67,7 @@ Across **16,085,610 molecules** (MUTAG + NCI1 + NCI109 + ZINC20):
 
 **Recommended:**
 
-```bash
+```console
 pixi install
 ```
 
@@ -85,19 +85,19 @@ This creates an isolated environment with all dependencies (networkx, numpy, pol
 
 **Alternative (pip):**
 
-```bash
+```console
 pip install -e ".[dev]"
 ```
 
 > If rdkit fails on pip, install it via conda first:
-> ```bash
+> ```console
 > conda install -c conda-forge rdkit
 > pip install -e ".[dev]" --no-deps
 > ```
 
 **Recommended first steps after install:**
 
-```bash
+```console
 # 1. Verify installation
 pixi run test
 
@@ -110,7 +110,7 @@ python examples/run_pipeline.py --data data/processed/MUTAG/mutag_smiles.smi --s
 ## 2. Download datasets
 
 > **Ready to test right away:** `data/processed/MUTAG/mutag_smiles.smi` (188 molecules, 8 KB) is already included in the repository — no download or parsing needed. Jump straight to [step 4](#4-run-the-pipeline):
-> ```bash
+> ```console
 > python examples/run_pipeline.py --data data/processed/MUTAG/mutag_smiles.smi
 > ```
 
@@ -118,13 +118,13 @@ All full datasets go into `data/raw/`. Run from the project root.
 
 **Download everything at once:**
 
-```bash
+```console
 python scripts/download/download_data/download_all.py
 ```
 
 **Or download individually:**
 
-```bash
+```console
 python scripts/download/download_data/download_mutag.py
 python scripts/download/download_data/download_nci1.py
 python scripts/download/download_data/download_nci109.py
@@ -152,10 +152,8 @@ data/raw/
 
 The 250k subset above is enough for quick experiments. To reproduce the full thesis results (~16 M molecules), download ZINC20 by tranches using the URI list already included in the repo:
 
-```bash
-python scripts/download/download_data/download_zinc_from_uri.py \
-    --uri scripts/download/download_data/ZINC-downloader-2D-smi.uri \
-    --workers 8
+```console
+python scripts/download/download_data/download_zinc_from_uri.py --uri scripts/download/download_data/ZINC-downloader-2D-smi.uri --workers 8
 ```
 
 Downloads land in `data/raw/ZINC20/` as individual `.smi` tranche files. The script retries failed files automatically (5 attempts, exponential backoff).
@@ -172,10 +170,8 @@ Downloads land in `data/raw/ZINC20/` as individual `.smi` tranche files. The scr
 
 **Test with a small batch first:**
 
-```bash
-python scripts/download/download_data/download_zinc_from_uri.py \
-    --uri scripts/download/download_data/ZINC-downloader-2D-smi.uri \
-    --n 10 --workers 4
+```console
+python scripts/download/download_data/download_zinc_from_uri.py --uri scripts/download/download_data/ZINC-downloader-2D-smi.uri --n 10 --workers 4
 ```
 
 > The `.uri` file was generated from the [ZINC20 download interface](https://zinc20.docking.org/tranches/home/) with filter: 2D → SMILES format. To update the tranche selection, download a new `.uri` file from ZINC20 and replace `scripts/download/download_data/ZINC-downloader-2D-smi.uri`.
@@ -186,7 +182,7 @@ python scripts/download/download_data/download_zinc_from_uri.py \
 
 The pipeline reads `.smi` files (space-separated, two columns with a header). ZINC/ZINC20 files use the header `smiles zinc_id`; benchmark datasets (MUTAG, NCI1, NCI109) use `smiles id`. The pipeline detects either column name automatically and stores the identifier as `molecule_id` in the database. MUTAG, NCI1, and NCI109 are in TU Dortmund graph format and need to be converted first; ZINC files are already in the correct format.
 
-```bash
+```console
 python scripts/download/parsing_data/parse_mutag_to_smiles.py
 python scripts/download/parsing_data/parse_nci1_to_smiles.py
 python scripts/download/parsing_data/parse_nci109_to_smiles.py
@@ -207,7 +203,7 @@ data/processed/
 
 ## 4. Run the pipeline
 
-```bash
+```console
 # MUTAG
 python examples/run_pipeline.py --data data/processed/MUTAG/mutag_smiles.smi
 
@@ -226,22 +222,10 @@ python examples/run_pipeline.py --data data/raw/ZINC/zinc250k.smi --workers 4
 
 ### ZINC20 tranches (sequential run over all files)
 
-After downloading tranches to `data/raw/ZINC20/` (see section 2), run the pipeline on each `.smi` file one after another.
+After downloading tranches to `data/raw/ZINC20/` (see section 2), run the pipeline on every `.smi` file with:
 
-**Linux / macOS:**
-
-```bash
-for f in data/raw/ZINC20/*.smi; do
-    python examples/run_pipeline.py --data "$f" --workers 4
-done
-```
-
-**Windows (PowerShell):**
-
-```powershell
-Get-ChildItem data\raw\ZINC20\*.smi | ForEach-Object {
-    python examples/run_pipeline.py --data $_.FullName --workers 4
-}
+```console
+python examples/run_pipeline.py --data-dir data/raw/ZINC20 --workers 4
 ```
 
 Each tranche produces its own SQLite database in `results/` (e.g. `results/AAAA.db`) and appends one summary row to the shared `results/summary.csv`.
@@ -250,11 +234,11 @@ Each tranche produces its own SQLite database in `results/` (e.g. `results/AAAA.
 
 To process one specific tranche, run:
 
-```bash
+```console
 python examples/run_pipeline.py --data data/raw/ZINC20/AAAA.smi --workers 4
 ```
 
-**If a run is interrupted**, simply re-run the loop — files whose results already exist in the database are not reprocessed (the DB row for that tranche is updated in place).
+**If a run is interrupted**, simply re-run the command — files whose results already exist in the database are not reprocessed (the DB row for that tranche is updated in place).
 
 ---
 
@@ -262,10 +246,12 @@ python examples/run_pipeline.py --data data/raw/ZINC20/AAAA.smi --workers 4
 
 | Argument | Default | Description |
 |---|---|---|
-| `--data` | `data/AAAA.smi` | Path to `.smi` input file |
+| `--data` | — | Path to a single `.smi` input file |
+| `--data-dir` | — | Directory of `.smi` files; processes all of them in sorted order |
+| `--indices` | — | Comma-separated 0-based row indices to process (e.g. `0,5,10`); only valid with `--data` |
 | `--sample` | `300` | Molecules sampled to auto-estimate WL step count K |
 | `--cap` | `50` | Max WL iterations allowed during K estimation |
-| `--db` | `results/<dataset_stem>.db` | SQLite database path; derived from input filename by default |
+| `--db` | `results/<dataset_stem>.db` | SQLite database path; derived from input filename by default (not valid with `--data-dir`) |
 | `--summary-csv` | `results/summary.csv` | CSV with one summary row per dataset |
 | `--workers` | `1` | Parallel worker processes (`multiprocessing.Pool`) |
 
@@ -350,14 +336,13 @@ WHERE dataset_name = 'mutag_smiles.smi'
 
 The full results reported in the thesis (16,085,612 molecules) were produced with the following command sequence:
 
-```bash
+```console
 pixi install
 pixi run test
-
-for f in data/processed/*.smi data/raw/ZINC/zinc250k.smi; do
-    python examples/run_pipeline.py --data "$f" --workers 8
-done
+python examples/run_reproducibility.py --workers 8
 ```
+
+`run_reproducibility.py` processes MUTAG, NCI1, NCI109, ZINC 250k, and all ZINC20 tranches in order. It skips files that have not been downloaded yet and prints a warning for each missing file.
 
 **Approximate runtimes** (8-core CPU, ~16 GB RAM):
 
@@ -385,7 +370,8 @@ src/wl_identifiability/      # Core package — import from here
 └── visualization.py         # WL coloring visualisation
 
 examples/
-└── run_pipeline.py          # Main CLI entry point
+├── run_pipeline.py          # Main CLI entry point
+└── run_reproducibility.py  # Cross-platform reproducibility runner
 
 scripts/
 ├── database/db.py           # SQLite schema and insert functions
@@ -397,7 +383,7 @@ scripts/
 
 ## 9. Tests and developer checks
 
-```bash
+```console
 # Run the test suite
 pixi run test
 # or: pytest tests/ -v --tb=short
@@ -423,7 +409,7 @@ The package is not installed. Run `pixi install` or `pip install -e .` from the 
 
 **`ImportError: No module named 'rdkit'`**
 rdkit is not available via pip on all platforms. Use `pixi install` or:
-```bash
+```console
 conda install -c conda-forge rdkit
 ```
 

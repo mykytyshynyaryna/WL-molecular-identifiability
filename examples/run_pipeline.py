@@ -207,10 +207,7 @@ def print_summary(
 
 
 def finalize_sqlite_db(db_path: Path) -> None:
-    """
-    Force SQLite to leave WAL mode so that .db-wal and .db-shm disappear.
-    Safe to call after the pipeline has finished writing.
-    """
+    # Force SQLite out of WAL mode so .db-wal/.db-shm files are cleaned up.
     if not db_path.exists():
         return
 
@@ -230,9 +227,102 @@ def finalize_sqlite_db(db_path: Path) -> None:
             print(f"  [WARN] Could not remove {extra_file.name} — file is still open in another program.")
 
 
+def run_on_file(
+    data_path: Path,
+    db_path: Path | None,
+    summary_csv_path: Path,
+    sample: int,
+    cap: int,
+    workers: int,
+    indices: list[int] | None,
+) -> int:
+    if not data_path.exists():
+        print(f"  ERROR: file not found: {data_path}")
+        return 1
+
+    df = load_dataset(str(data_path))
+    if len(df) == 0:
+        print("  ERROR: dataset is empty after parsing.")
+        return 1
+
+    if indices is not None:
+        valid = [i for i in indices if 0 <= i < len(df)]
+        skipped = len(indices) - len(valid)
+        if skipped:
+            print(f"  [WARN] {skipped} index/indices out of range (dataset has {len(df)} rows), skipped")
+        df = df[valid]
+        if len(df) == 0:
+            print("  ERROR: no rows remain after applying --indices filter.")
+            return 1
+        print(f"  Filtered to {len(df):,} rows via --indices")
+
+    dataset_name = data_path.name
+    resolved_db = db_path if db_path else DEFAULT_RESULTS_DIR / f"{data_path.stem}.db"
+    resolved_db.parent.mkdir(parents=True, exist_ok=True)
+    summary_csv_path.parent.mkdir(parents=True, exist_ok=True)
+
+    print(f"  SQLite DB        : {resolved_db}")
+    print(f"  Summary CSV      : {summary_csv_path}  (one row per dataset)")
+
+    print(f"\n  Estimating WL steps (sample={sample}, cap={cap}) ...")
+    k_stats = estimate_fixed_wl_steps_from_dataframe(df, sample_size=sample, cap=cap)
+    K = int(k_stats["K_max"])
+    K_p95 = int(k_stats["K_p95"])
+    print(f"  K_max = {K}")
+    print(f"  K_p95 = {K_p95}")
+
+    print(f"\n  Running pipeline on {len(df):,} molecules (K={K}, workers={workers}) ...")
+    res, bad = run_molecule_analysis_pipeline(df, fixed_wl_steps=K, n_workers=workers)
+
+    print(f"\n  Writing results to SQLite ({resolved_db}) ...")
+    conn = open_db(resolved_db)
+    for row in res.iter_rows(named=True):
+        db_insert_row(conn, row, dataset_name=dataset_name)
+    conn.close()
+
+    finalize_sqlite_db(resolved_db)
+
+    print_summary(
+        res=res,
+        bad=bad,
+        data_path=data_path,
+        sample_size=sample,
+        cap=cap,
+        k_max=K,
+        k_p95=K_p95,
+    )
+
+    summary_row = build_summary_row(
+        res=res,
+        bad=bad,
+        dataset_name=dataset_name,
+        sample_size=sample,
+        cap=cap,
+        k_max=K,
+        k_p95=K_p95,
+    )
+    write_dataset_summary_row(summary_csv_path, summary_row)
+
+    print(f"\n  Summary CSV row  : {summary_csv_path}  (dataset_name={dataset_name})")
+    print(f"  SQLite DB saved  : {resolved_db}")
+    return 0
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Run the full molecule identifiability pipeline.")
-    p.add_argument("--data", default="data/AAAA.smi", help="Path to .smi dataset file")
+    input_group = p.add_mutually_exclusive_group()
+    input_group.add_argument("--data", default=None, help="Path to a single .smi dataset file")
+    input_group.add_argument(
+        "--data-dir",
+        dest="data_dir",
+        default=None,
+        help="Directory containing .smi files; all are processed in sorted order",
+    )
+    p.add_argument(
+        "--indices",
+        default=None,
+        help="Comma-separated 0-based row indices to process (e.g. --indices 0,5,10); only valid with --data",
+    )
     p.add_argument("--sample", type=int, default=300, help="Sample size for WL step estimation")
     p.add_argument("--cap", type=int, default=50, help="Max WL iterations cap")
     p.add_argument(
@@ -240,7 +330,8 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help=(
             "SQLite DB path for per-molecule results. "
-            "Default: results/<dataset_stem>.db (derived from --data filename)."
+            "Default: results/<dataset_stem>.db (derived from --data filename). "
+            "Not valid with --data-dir."
         ),
     )
     p.add_argument(
@@ -264,85 +355,74 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
 
+    if args.data is None and args.data_dir is None:
+        print("ERROR: provide --data <file.smi> or --data-dir <directory>", file=sys.stderr)
+        return 1
+
+    if args.data_dir and args.db:
+        print("ERROR: --db cannot be used with --data-dir (each file gets its own database)", file=sys.stderr)
+        return 1
+
+    if args.data_dir and args.indices:
+        print("ERROR: --indices cannot be used with --data-dir", file=sys.stderr)
+        return 1
+
     print("=== 1. Checking module imports ===")
     if not check_imports():
         print("\nAborting: one or more modules failed to import.")
         return 1
 
-    print("\n=== 2. Loading dataset ===")
-    data_path = Path(args.data)
-    if not data_path.exists():
-        print(f"  ERROR: file not found: {data_path}")
-        return 1
-
-    df = load_dataset(str(data_path))
-    if len(df) == 0:
-        print("  ERROR: dataset is empty after parsing.")
-        return 1
-
-    dataset_name = data_path.name
-
-    db_path = Path(args.db) if args.db else DEFAULT_RESULTS_DIR / f"{data_path.stem}.db"
-    db_path.parent.mkdir(parents=True, exist_ok=True)
+    indices: list[int] | None = None
+    if args.indices:
+        try:
+            indices = [int(x.strip()) for x in args.indices.split(",")]
+        except ValueError:
+            print("ERROR: --indices must be comma-separated integers, e.g. --indices 0,5,10", file=sys.stderr)
+            return 1
 
     summary_csv_path = Path(args.summary_csv)
-    summary_csv_path.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"  SQLite DB        : {db_path}")
-    print(f"  Summary CSV      : {summary_csv_path}  (one row per dataset)")
+    if args.data_dir:
+        data_dir = Path(args.data_dir)
+        if not data_dir.is_dir():
+            print(f"ERROR: --data-dir path is not a directory: {data_dir}", file=sys.stderr)
+            return 1
+        smi_files = sorted(data_dir.glob("*.smi"))
+        if not smi_files:
+            print(f"ERROR: no .smi files found in {data_dir}", file=sys.stderr)
+            return 1
+        print(f"\nFound {len(smi_files)} .smi file(s) in {data_dir}")
+        failed: list[Path] = []
+        for i, smi_path in enumerate(smi_files, 1):
+            print(f"\n[{i}/{len(smi_files)}] Processing: {smi_path.name}")
+            rc = run_on_file(
+                data_path=smi_path,
+                db_path=None,
+                summary_csv_path=summary_csv_path,
+                sample=args.sample,
+                cap=args.cap,
+                workers=args.workers,
+                indices=None,
+            )
+            if rc != 0:
+                failed.append(smi_path)
+        if failed:
+            print(f"\n{len(failed)} file(s) failed:")
+            for f in failed:
+                print(f"  {f.name}")
+            return 1
+        print(f"\nAll {len(smi_files)} file(s) processed successfully.")
+        return 0
 
-    print(f"\n=== 3. Estimating WL steps (sample={args.sample}, cap={args.cap}) ===")
-    k_stats = estimate_fixed_wl_steps_from_dataframe(
-        df,
-        sample_size=args.sample,
+    return run_on_file(
+        data_path=Path(args.data),
+        db_path=Path(args.db) if args.db else None,
+        summary_csv_path=summary_csv_path,
+        sample=args.sample,
         cap=args.cap,
+        workers=args.workers,
+        indices=indices,
     )
-    K = int(k_stats["K_max"])
-    K_p95 = int(k_stats["K_p95"])
-
-    print(f"  K_max = {K}")
-    print(f"  K_p95 = {K_p95}")
-
-    print(f"\n=== 4. Running pipeline on {len(df):,} molecules (K={K}, workers={args.workers}) ===")
-    res, bad = run_molecule_analysis_pipeline(
-        df,
-        fixed_wl_steps=K,
-        n_workers=args.workers,
-    )
-
-    print(f"\n=== 5. Writing results to SQLite ({db_path}) ===")
-    conn = open_db(db_path)
-    for row in res.iter_rows(named=True):
-        db_insert_row(conn, row, dataset_name=dataset_name)
-    conn.close()
-
-    finalize_sqlite_db(db_path)
-
-    print_summary(
-        res=res,
-        bad=bad,
-        data_path=data_path,
-        sample_size=args.sample,
-        cap=args.cap,
-        k_max=K,
-        k_p95=K_p95,
-    )
-
-    summary_row = build_summary_row(
-        res=res,
-        bad=bad,
-        dataset_name=dataset_name,
-        sample_size=args.sample,
-        cap=args.cap,
-        k_max=K,
-        k_p95=K_p95,
-    )
-    write_dataset_summary_row(summary_csv_path, summary_row)
-
-    print(f"\n  Summary CSV row  : {summary_csv_path}  (dataset_name={dataset_name})")
-    print(f"  SQLite DB saved  : {db_path}")
-
-    return 0
 
 
 if __name__ == "__main__":
