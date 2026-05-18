@@ -259,6 +259,74 @@ Results are written to `results/` (created automatically, not tracked by git).
 
 ---
 
+### Run selected molecules from an existing `.smi` file
+
+To run the pipeline only on selected molecules from a larger `.smi` file, select molecule rows by index and write them to a temporary `.smi` file.
+
+Indices are zero-based and do not count the header row.  
+For example, index `0` means the first molecule after the header.
+
+**Linux / macOS:**
+
+```bash
+input_file="data/processed/MUTAG/mutag_smiles.smi"
+indices=(0 5 10)
+
+tmp="/tmp/selected_molecules.smi"
+
+head -n 1 "$input_file" > "$tmp"
+
+for index in "${indices[@]}"; do
+  sed -n "$((index + 2))p" "$input_file" >> "$tmp"
+done
+
+pixi run python examples/run_pipeline.py \
+  --data "$tmp" \
+  --db results/selected_molecules.db \
+  --sample ${#indices[@]} \
+  --workers 1
+
+rm "$tmp"
+```
+
+**Windows (PowerShell):**
+
+```powershell
+$inputFile = "data\processed\MUTAG\mutag_smiles.smi"
+$indices = @(0, 5, 10)
+
+$tmp = Join-Path $env:TEMP "selected_molecules.smi"
+
+$lines = Get-Content $inputFile
+$header = $lines[0]
+$rows = foreach ($index in $indices) {
+    $lines[$index + 1]
+}
+
+$selectedLines = @($header) + @($rows)
+
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+[System.IO.File]::WriteAllLines($tmp, $selectedLines, $utf8NoBom)
+
+pixi run python examples/run_pipeline.py `
+  --data $tmp `
+  --db results/selected_molecules.db `
+  --sample $indices.Count `
+  --workers 1
+
+Remove-Item $tmp
+```
+
+The original `.smi` file is not modified.  
+Only a temporary file is created, processed, and removed after the run.
+
+The results are saved to:
+
+```text
+results/selected_molecules.db
+```
+---
+
 ## 5. What the pipeline does
 
 For each molecule:
