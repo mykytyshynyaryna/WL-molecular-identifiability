@@ -27,6 +27,7 @@ dev = [
 
 [project.scripts]
 run-pipeline = "examples.run_pipeline:main"
+wl-check = "wl_identifiability._cli:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

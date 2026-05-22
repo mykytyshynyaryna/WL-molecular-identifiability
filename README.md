@@ -107,9 +107,86 @@ python examples/run_pipeline.py --data data/processed/MUTAG/mutag_smiles.smi --s
 
 ---
 
-## 2. Download datasets
+## 2. Quick checks
 
-> **Ready to test right away:** `data/processed/MUTAG/mutag_smiles.smi` (188 molecules, 8 KB) is already included in the repository — no download or parsing needed. Jump straight to [step 4](#4-run-the-pipeline):
+### From the terminal (no Python script needed)
+
+After installation the `wl-check` command is available inside the pixi environment:
+
+```console
+pixi run wl-check "CCCN"
+pixi run wl-check "CCCN" "c1ccccc1" "CC(=O)O"
+```
+
+Output:
+
+```
+CCCN: identifiable
+c1ccccc1: NOT identifiable
+CC(=O)O: identifiable
+```
+
+Pass any number of SMILES strings as positional arguments. Exit code is `0` if all succeeded, `1` if any SMILES could not be parsed.
+
+---
+
+### As a Python library
+
+After installation, the package exposes three simple functions — no files, no CLI needed:
+
+```python
+from wl_identifiability import is_smi_identifiable, is_mol_identifiable, is_graph_identifiable
+```
+
+### Check a single SMILES string
+
+```python
+from wl_identifiability import is_smi_identifiable
+
+print(is_smi_identifiable("CCCN"))          # True — identifiable
+print(is_smi_identifiable("C1=CC=CC=C1"))   # True — benzene, identifiable
+```
+
+Returns `True` if 1-WL (atom-aware) is sufficient to uniquely identify the molecule, `False` otherwise. Raises `ValueError` if RDKit cannot parse the SMILES.
+
+### Check an RDKit molecule object
+
+```python
+from rdkit import Chem
+from wl_identifiability import is_mol_identifiable
+
+mol = Chem.MolFromSmiles("CCCN")
+print(is_mol_identifiable(mol))   # True
+```
+
+### Check a NetworkX graph (topological mode)
+
+```python
+import networkx as nx
+from wl_identifiability import is_graph_identifiable
+
+G = nx.cycle_graph(6)
+print(is_graph_identifiable(G))   # True
+```
+
+Uses topological 1-WL (no atom labels) — suitable for any NetworkX graph.
+
+### Check a list of molecules
+
+```python
+from wl_identifiability import is_smi_identifiable
+
+smiles_list = ["CCCN", "c1ccccc1", "CC(=O)O"]
+results = {smi: is_smi_identifiable(smi) for smi in smiles_list}
+print(results)
+# {'CCCN': True, 'c1ccccc1': True, 'CC(=O)O': True}
+```
+
+---
+
+## 3. Download datasets
+
+> **Ready to test right away:** `data/processed/MUTAG/mutag_smiles.smi` (188 molecules, 8 KB) is already included in the repository — no download or parsing needed. Jump straight to [step 5](#5-run-the-pipeline):
 > ```console
 > python examples/run_pipeline.py --data data/processed/MUTAG/mutag_smiles.smi
 > ```
@@ -178,7 +255,7 @@ python scripts/download/download_data/download_zinc_from_uri.py --uri scripts/do
 
 ---
 
-## 3. Parse datasets to SMILES
+## 4. Parse datasets to SMILES
 
 The pipeline reads `.smi` files (space-separated, two columns with a header). ZINC/ZINC20 files use the header `smiles zinc_id`; benchmark datasets (MUTAG, NCI1, NCI109) use `smiles id`. The pipeline detects either column name automatically and stores the identifier as `molecule_id` in the database. MUTAG, NCI1, and NCI109 are in TU Dortmund graph format and need to be converted first; ZINC files are already in the correct format.
 
@@ -201,7 +278,7 @@ data/processed/
 
 ---
 
-## 4. Run the pipeline
+## 5. Run the pipeline
 
 ```console
 # MUTAG
@@ -222,7 +299,7 @@ python examples/run_pipeline.py --data data/raw/ZINC/zinc250k.smi --workers 4
 
 ### ZINC20 tranches (sequential run over all files)
 
-After downloading tranches to `data/raw/ZINC20/` (see section 2), run the pipeline on every `.smi` file with:
+After downloading tranches to `data/raw/ZINC20/` (see section 3), run the pipeline on every `.smi` file with:
 
 ```console
 python examples/run_pipeline.py --data-dir data/raw/ZINC20 --workers 4
@@ -277,7 +354,7 @@ results/selected_molecules.db
 ```
 ---
 
-## 5. What the pipeline does
+## 6. What the pipeline does
 
 For each molecule:
 
@@ -296,7 +373,7 @@ K is estimated automatically from a random sample of `--sample` molecules before
 
 ---
 
-## 6. Output
+## 7. Output
 
 ```
 results/
@@ -350,7 +427,7 @@ WHERE dataset_name = 'mutag_smiles.smi'
 
 ---
 
-## 7. Reproducibility
+## 8. Reproducibility
 
 The full results reported in the thesis (16,085,612 molecules) were produced with the following command sequence:
 
@@ -375,7 +452,7 @@ Results are written to `results/<dataset_stem>.db` (one SQLite file per dataset)
 
 ---
 
-## 8. Package structure
+## 9. Package structure
 
 ```
 src/wl_identifiability/      # Core package — import from here
@@ -384,7 +461,7 @@ src/wl_identifiability/      # Core package — import from here
 ├── flip_graph.py            # Flip graph construction
 ├── skeleton.py              # Skeleton graph, Lemma 16 checks
 ├── bouquet.py               # Bouquet detection (Theorem 17)
-├── experiments.py           # analyze_single_molecule, run_molecule_analysis_pipeline
+├── experiments.py           # is_smi/mol/graph_identifiable, analyze_single_molecule, run_molecule_analysis_pipeline
 └── visualization.py         # WL coloring visualisation
 
 examples/
@@ -399,7 +476,7 @@ scripts/
 
 ---
 
-## 9. Tests and developer checks
+## 10. Tests and developer checks
 
 ```console
 # Run the test suite
@@ -420,7 +497,7 @@ The test suite covers WL coloring, graph construction, flip graph, skeleton, bou
 
 ---
 
-## 10. Troubleshooting
+## 11. Troubleshooting
 
 **`ImportError: No module named 'wl_identifiability'`**
 The package is not installed. Run `pixi install` or `pip install -e .` from the project root.
@@ -435,7 +512,7 @@ conda install -c conda-forge rdkit
 `mutag_smiles.smi` is included in the repository — no download or parsing needed. Check that the repository was cloned correctly and that `data/processed/MUTAG/mutag_smiles.smi` exists.
 
 **`FileNotFoundError: data/raw/MUTAG/MUTAG/MUTAG_A.txt`**
-Run the download script first (step 2).
+Run the download script first (step 3).
 
 **Pipeline is slow on large datasets**
 Use `--workers N` where N matches your CPU count. For ZINC 250k, `--workers 4` is a good starting point.

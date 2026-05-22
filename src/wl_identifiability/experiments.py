@@ -273,6 +273,118 @@ def analyze_single_molecule(smiles: str, molecule_id: str, fixed_wl_steps: int) 
     }
 
 
+def is_graph_identifiable(G: nx.Graph, wl_steps: int | None = None) -> bool:
+    """Return True if the graph G is identifiable by 1-WL (topological mode).
+
+    Uses topological WL coloring — no atom labels, structure only.
+    Suitable for any NetworkX graph, not just molecular graphs.
+    For molecule-specific analysis with atom labels use
+    :func:`is_mol_identifiable` or :func:`is_smi_identifiable`.
+
+    Parameters
+    ----------
+    G:
+        A NetworkX graph.
+    wl_steps:
+        Number of WL iterations. If *None*, estimated automatically from topology.
+
+    Returns
+    -------
+    bool
+        ``True`` if the flip graph of *G* is a bouquet forest, i.e. 1-WL is
+        sufficient to distinguish *G* from all structurally equivalent graphs.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> from wl_identifiability import is_graph_identifiable
+    >>> G = nx.cycle_graph(6)
+    >>> is_graph_identifiable(G)
+    True
+    """
+    if wl_steps is None:
+        wl_steps = compute_fixed_wl_steps_from_topology(G, cap=50)
+
+    wl_result = compute_wl_with_fixed_steps(G, wl_steps, label_attr=None)
+    labels = wl_result["labels"]
+
+    flip_graph, _ = build_flip_graph_from_labels(G, labels)
+    result = analyze_bouquet_forest_structure(flip_graph, labels=labels)
+    return bool(result.get("is_bouquet_forest", False))
+
+
+def is_mol_identifiable(mol: Any, wl_steps: int | None = None) -> bool:
+    """Return True if the RDKit molecule is identifiable by 1-WL (atom-aware mode).
+
+    Parameters
+    ----------
+    mol:
+        An ``rdkit.Chem.Mol`` object.
+    wl_steps:
+        Number of WL iterations. If *None*, estimated automatically from topology.
+
+    Returns
+    -------
+    bool
+        ``True`` if the molecule is identifiable by atom-aware 1-WL.
+
+    Examples
+    --------
+    >>> from rdkit import Chem
+    >>> from wl_identifiability import is_mol_identifiable
+    >>> mol = Chem.MolFromSmiles("CCCN")
+    >>> is_mol_identifiable(mol)
+    True
+    """
+    G = convert_rdkit_molecule_to_nx_graph(mol)
+
+    if wl_steps is None:
+        wl_steps = compute_fixed_wl_steps_from_topology(G, cap=50)
+
+    wl_result = compute_wl_with_fixed_steps(G, wl_steps, label_attr="atomic_num")
+    labels = wl_result["labels"]
+
+    flip_graph, _ = build_flip_graph_from_labels(G, labels)
+    result = analyze_bouquet_forest_structure(flip_graph, labels=labels)
+    return bool(result.get("is_bouquet_forest", False))
+
+
+def is_smi_identifiable(smiles: str, wl_steps: int | None = None) -> bool:
+    """Return True if the molecule described by *smiles* is identifiable by 1-WL.
+
+    This is the simplest entry point: pass a SMILES string, get a boolean.
+
+    Parameters
+    ----------
+    smiles:
+        A valid SMILES string, e.g. ``"CCCN"``.
+    wl_steps:
+        Number of WL iterations. If *None*, estimated automatically from topology.
+
+    Returns
+    -------
+    bool
+        ``True`` if the molecule is identifiable by atom-aware 1-WL.
+
+    Raises
+    ------
+    ValueError
+        If RDKit cannot parse the SMILES string.
+
+    Examples
+    --------
+    >>> from wl_identifiability import is_smi_identifiable
+    >>> is_smi_identifiable("CCCN")
+    True
+    >>> is_smi_identifiable("C1=CC=CC=C1")
+    True
+    """
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        raise ValueError(f"RDKit could not parse SMILES: {smiles!r}")
+    return is_mol_identifiable(mol, wl_steps=wl_steps)
+
+
 def _worker_task(args: tuple[str, str, int]) -> dict[str, Any]:
     """Unpacks args and calls analyze_single_molecule. Must be top-level for pickling."""
     smiles, molecule_id, fixed_wl_steps = args

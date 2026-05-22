@@ -2,6 +2,11 @@
 wl_identifiability — 1-WL identifiability analysis for molecular graphs.
 
 Public API:
+  Quick checks (simplest entry points)
+    is_smi_identifiable   — SMILES string  → bool
+    is_mol_identifiable   — RDKit Mol      → bool
+    is_graph_identifiable — NetworkX Graph → bool
+
   WL coloring
     compute_wl_coloring
     compute_fixed_wl_steps_from_topology
@@ -47,6 +52,9 @@ from .experiments import (
     analyze_single_molecule,
     estimate_fixed_wl_steps_from_dataframe,
     estimate_global_wl_steps,
+    is_graph_identifiable,
+    is_mol_identifiable,
+    is_smi_identifiable,
     run_molecule_analysis_pipeline,
 )
 from .flip_graph import build_flip_graph_from_labels
@@ -72,6 +80,11 @@ from .wl import (
 )
 
 __all__ = [
+    # Quick checks — simplest entry points
+    "is_smi_identifiable",
+    "is_mol_identifiable",
+    "is_graph_identifiable",
+    # Lower-level API
     "REL_EMPTY",
     "REL_FAN",
     "REL_IRREGULAR",
